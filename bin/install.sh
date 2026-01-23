@@ -6,6 +6,13 @@ REPO_URL="https://github.com/macoaure/.dotfiles.git"
 
 DOTFILES_DIR="$HOME/.dotfiles"
 
+if [ -d "$DOTFILES_DIR" ]; then
+  rm -rf "$DOTFILES_DIR"
+  echo "Removed existing dotfiles directory."
+else
+  echo "Dotfiles directory does not exist. Proceeding with installation."
+fi
+
 # Install Ansible if not present
 
 if ! command -v ansible-playbook &> /dev/null; then
