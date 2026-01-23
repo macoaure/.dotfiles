@@ -54,6 +54,6 @@ cd "$DOTFILES_DIR"
 
 echo "Running Ansible playbook..."
 
-ansible-playbook src/setup.yml
+ansible-playbook src/setup.yml --ask-become-pass
 
 echo "Dotfiles installation complete!"
