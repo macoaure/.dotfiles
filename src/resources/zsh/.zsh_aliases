@@ -1,0 +1,84 @@
+# Custom aliases
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git log --oneline'
+alias gd='git diff'
+
+# Package manager detection and aliases
+if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    case $ID in
+        ubuntu|debian|linuxmint|pop)
+            # Debian/Ubuntu-based
+            alias update='sudo apt update && sudo apt upgrade'
+            alias install='sudo apt install'
+            alias remove='sudo apt remove'
+            alias search='apt search'
+            alias show='apt show'
+            ;;
+        fedora|rhel|centos|almalinux|rocky)
+            # Red Hat/Fedora-based
+            if command -v dnf >/dev/null 2>&1; then
+                alias update='sudo dnf update'
+                alias install='sudo dnf install'
+                alias remove='sudo dnf remove'
+                alias search='dnf search'
+                alias show='dnf info'
+            else
+                alias update='sudo yum update'
+                alias install='sudo yum install'
+                alias remove='sudo yum remove'
+                alias search='yum search'
+                alias show='yum info'
+            fi
+            ;;
+        arch|manjaro|endeavouros)
+            # Arch Linux-based
+            alias update='sudo pacman -Syu'
+            alias install='sudo pacman -S'
+            alias remove='sudo pacman -Rns'
+            alias search='pacman -Ss'
+            alias show='pacman -Si'
+            ;;
+        opensuse*|sles)
+            # SUSE-based
+            alias update='sudo zypper update'
+            alias install='sudo zypper install'
+            alias remove='sudo zypper remove'
+            alias search='zypper search'
+            alias show='zypper info'
+            ;;
+        alpine)
+            # Alpine Linux
+            alias update='sudo apk update && sudo apk upgrade'
+            alias install='sudo apk add'
+            alias remove='sudo apk del'
+            alias search='apk search'
+            alias show='apk info'
+            ;;
+        *)
+            # Fallback to apt (most common)
+            echo "Warning: Unknown distribution '$ID'. Using apt as fallback."
+            alias update='sudo apt update && sudo apt upgrade'
+            alias install='sudo apt install'
+            alias remove='sudo apt remove'
+            alias search='apt search'
+            alias show='apt show'
+            ;;
+    esac
+else
+    # Fallback if /etc/os-release doesn't exist
+    echo "Warning: Cannot detect distribution. Using apt as fallback."
+    alias update='sudo apt update && sudo apt upgrade'
+    alias install='sudo apt install'
+    alias remove='sudo apt remove'
+    alias search='apt search'
+    alias show='apt show'
+fi
+
+# Navigation aliases
+alias projects='cd ~/Projects'
+alias downloads='cd ~/Downloads'
+alias documents='cd ~/Documents'

@@ -1,0 +1,12 @@
+---
+
+- hosts: localhost
+  tasks:
+    - name: Include setup tasks
+      include_tasks: src/setup.yml
+      tags: always
+
+    - name: Tag ghostty tasks
+      debug:
+        msg: "Ghostty tasks tagged"
+      tags: ghostty

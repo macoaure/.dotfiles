@@ -1,0 +1,23 @@
+# Nano configuration
+set autoindent
+set backup
+set const
+set cutfromcursor
+set linenumbers
+set mouse
+set smooth
+set softwrap
+set tabsize 4
+set tabstospaces
+set trimblanks
+set wordbounds
+
+# Syntax highlighting
+include "/usr/share/nano/*.nanorc"
+
+# Key bindings
+bind ^C copy main
+bind ^V paste all
+bind ^X cut main
+bind ^S savefile main
+bind ^Q exit main

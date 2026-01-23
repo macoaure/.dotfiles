@@ -1,0 +1,298 @@
+---
+
+- hosts: localhost
+
+  # If you need to provide a sudo password, run:
+  # ansible-playbook src/setup.yml --ask-become-pass
+  # Or set up passwordless sudo for your user
+
+  tasks:
+
+    - name: Ensure Git is installed
+      package:
+        name: git
+        state: present
+      become: true
+
+    - name: Ensure Nano is installed
+      package:
+        name: nano
+        state: present
+      become: true
+
+    - name: Ensure Zsh is installed
+      package:
+        name: zsh
+        state: present
+      become: true
+
+    - name: Ensure Stow is installed
+      package:
+        name: stow
+        state: present
+      become: true
+
+    - name: Install Ghostty terminal emulator
+      block:
+        - name: Install Ghostty on Ubuntu/Debian from GitHub release
+          shell: |
+            if ! command -v ghostty >/dev/null 2>&1; then
+              # Try to install from official Ghostty binary release (works on all Linux)
+              echo "Installing Ghostty from official binary release..."
+              curl -fsSL https://github.com/ghostty-org/ghostty/releases/latest/download/ghostty-linux-x86_64.tar.gz | tar -xzf - -C /tmp
+              sudo mv /tmp/ghostty-linux-x86_64/ghostty /usr/local/bin/ghostty
+              sudo chmod +x /usr/local/bin/ghostty
+              echo "Installed Ghostty from official binary release"
+            fi
+          become: true
+          when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+          tags: ghostty
+
+        - name: Install Ghostty on Fedora/RHEL
+          package:
+            name: ghostty
+            state: present
+          become: true
+          when: ansible_distribution in ['Fedora', 'RedHat', 'CentOS', 'AlmaLinux', 'Rocky']
+          tags: ghostty
+
+        - name: Install Ghostty on Arch Linux
+          package:
+            name: ghostty
+            state: present
+          become: true
+          when: ansible_distribution in ['Archlinux', 'Manjaro', 'EndeavourOS']
+          tags: ghostty
+
+        - name: Install Ghostty on SUSE
+          package:
+            name: ghostty
+            state: present
+          become: true
+          when: ansible_distribution in ['openSUSE', 'SLES']
+          tags: ghostty
+
+        - name: Install Ghostty on Alpine
+          package:
+            name: ghostty
+            state: present
+          become: true
+          when: ansible_distribution == 'Alpine'
+          tags: ghostty
+      rescue:
+        - name: Try installing Ghostty from official binary release
+          shell: |
+            if ! command -v ghostty >/dev/null 2>&1; then
+              curl -fsSL https://github.com/ghostty-org/ghostty/releases/latest/download/ghostty-linux-x86_64.tar.gz | tar -xzf - -C /tmp
+              sudo mv /tmp/ghostty-linux-x86_64/ghostty /usr/local/bin/ghostty
+              sudo chmod +x /usr/local/bin/ghostty
+            fi
+          become: true
+          ignore_errors: yes
+          tags: ghostty
+
+        - name: Warn about Ghostty installation failure
+          debug:
+            msg: "Ghostty installation failed. Please install manually from https://ghostty.org/docs/install"
+          tags: ghostty
+
+    - name: Set Ghostty as default terminal
+      alternatives:
+        name: x-terminal-emulator
+        path: /usr/bin/ghostty
+      become: true
+      when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+      ignore_errors: yes
+      tags: ghostty
+
+    - name: Set Ghostty as default terminal on Arch-based systems
+      shell: |
+        # Update MIME type associations for terminal
+        if command -v xdg-mime >/dev/null 2>&1; then
+          xdg-mime default ghostty.desktop application/x-terminal
+        fi
+        # Also set the TERMINAL environment variable system-wide
+        if [ ! -f /etc/profile.d/terminal.sh ]; then
+          echo 'export TERMINAL=ghostty' | sudo tee /etc/profile.d/terminal.sh >/dev/null
+        fi
+      become: true
+      when: ansible_distribution in ['Archlinux', 'Manjaro', 'EndeavourOS']
+      ignore_errors: yes
+      tags: ghostty
+
+    - name: Set Ghostty as default terminal on Alpine
+      alternatives:
+        name: x-terminal-emulator
+        path: /usr/bin/ghostty
+      become: true
+      when: ansible_distribution == 'Alpine'
+      ignore_errors: yes
+      tags: ghostty
+
+    - name: Install Oh My Zsh
+      shell: |
+        if [ ! -d ~/.oh-my-zsh ]; then
+          sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+        fi
+      args:
+        creates: ~/.oh-my-zsh
+
+    - name: Install Docker and Docker Compose
+      block:
+        - name: Add Docker GPG key (Ubuntu/Debian)
+          shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+          become: true
+          when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+          tags: docker
+
+        - name: Add Docker repository (Ubuntu/Debian)
+          shell: echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu focal stable' | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          become: true
+          when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+          tags: docker
+
+        - name: Install Docker Engine (Ubuntu/Debian)
+          shell: sudo apt-get update && sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+          become: true
+          when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+          tags: docker
+
+        - name: Add user to docker group (Ubuntu/Debian)
+          shell: sudo usermod -aG docker $USER
+          become: true
+          when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+          tags: docker
+
+        - name: Install Docker on Fedora
+          shell: |
+            # Install Docker
+            sudo dnf -y install dnf-plugins-core
+            sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+            sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+            
+            # Start and enable Docker
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            
+            # Add user to docker group
+            sudo usermod -aG docker $USER
+          become: true
+          when: ansible_distribution == 'Fedora'
+          tags: docker
+
+        - name: Install Docker on RHEL/CentOS
+          shell: |
+            # Install Docker
+            sudo yum install -y yum-utils
+            sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+            sudo yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+            
+            # Start and enable Docker
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            
+            # Add user to docker group
+            sudo usermod -aG docker $USER
+          become: true
+          when: ansible_distribution in ['RedHat', 'CentOS', 'AlmaLinux', 'Rocky']
+          tags: docker
+
+        - name: Install Docker on Arch Linux
+          shell: |
+            # Install Docker
+            sudo pacman -S --noconfirm docker docker-compose
+            
+            # Start and enable Docker
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            
+            # Add user to docker group
+            sudo usermod -aG docker $USER
+          become: true
+          when: ansible_distribution in ['Archlinux', 'Manjaro', 'EndeavourOS']
+          tags: docker
+
+        - name: Install Docker on SUSE
+          shell: |
+            # Install Docker
+            sudo zypper install -y docker docker-compose
+            
+            # Start and enable Docker
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            
+            # Add user to docker group
+            sudo usermod -aG docker $USER
+          become: true
+          when: ansible_distribution in ['openSUSE', 'SLES']
+          tags: docker
+
+        - name: Install Docker on Alpine
+          shell: |
+            # Install Docker
+            sudo apk add docker docker-compose
+            
+            # Start and enable Docker
+            sudo rc-update add docker boot
+            sudo service docker start
+            
+            # Add user to docker group
+            sudo addgroup $USER docker
+          become: true
+          when: ansible_distribution == 'Alpine'
+          tags: docker
+      rescue:
+        - name: Warn about Docker installation failure
+          debug:
+            msg: "Docker installation failed. Please install manually from https://docs.docker.com/get-docker/"
+          tags: docker
+
+    - name: Install Oh My Zsh
+      shell: |
+        if [ ! -d ~/.oh-my-zsh ]; then
+          sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+        fi
+      args:
+        creates: ~/.oh-my-zsh
+
+    - name: Install Powerlevel10k theme
+      git:
+        repo: https://github.com/romkatv/powerlevel10k.git
+        dest: ~/.oh-my-zsh/custom/themes/powerlevel10k
+        version: master
+      when: not ansible_check_mode
+
+    - name: Install zsh-syntax-highlighting plugin
+      git:
+        repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
+        dest: ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+        version: master
+      when: not ansible_check_mode
+
+    - name: Install zsh-autosuggestions plugin
+      git:
+        repo: https://github.com/zsh-users/zsh-autosuggestions.git
+        dest: ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+        version: master
+      when: not ansible_check_mode
+
+    - name: Install zsh-history-substring-search plugin
+      git:
+        repo: https://github.com/zsh-users/zsh-history-substring-search.git
+        dest: ~/.oh-my-zsh/custom/plugins/zsh-history-substring-search
+        version: master
+      when: not ansible_check_mode
+
+    - name: Install zsh-autocomplete plugin
+      git:
+        repo: https://github.com/marlonrichert/zsh-autocomplete.git
+        dest: ~/.oh-my-zsh/custom/plugins/zsh-autocomplete
+        version: main
+      when: not ansible_check_mode
+
+    - name: Stow all packages
+      command: stow -t ~ {{ item }}
+      args:
+        chdir: ~/.dotfiles/src/resources
+      loop: "{{ query('fileglob', '~/.dotfiles/src/resources/*') | map('basename') | list }}"
+      ignore_errors: yes
