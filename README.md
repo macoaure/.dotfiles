@@ -1,98 +1,63 @@
-# .dotfiles Management
+# macoaure/.dotfiles
 
-This project aims to manage custom .dotfiles using Ansible, Git, and Stow.
+> [!WARNING]
+> This is a personal repository, do not use it as-is without understanding its contents and implications.
 
-## Overview
+This repository is a small, practical system for treating a personal environment as _infrastructure_. It captures the idea that your shell, editor, and common tool configurations should be:
 
-Dotfiles are configuration files for various tools and applications, typically hidden files starting with a dot (e.g., `.bashrc`, `.vimrc`). This repository provides a structured way to organize, version control, and deploy these files across different machines using:
+- **Declarative** — stored as files in version control (Git)
+- **Reproducible** — deployable to any machine with minimal steps (Ansible)
+- **Non-invasive** — symlinked into your home directory without clutter (Stow)
 
-- **Git**: For version control and tracking changes.
-- **Stow**: For managing symlinks to dotfiles without cluttering the home directory.
-- **Ansible**: For automating the setup and deployment process.
+---
 
-## Packages
+## Core Principles ✨
 
-### Nano
-- `src/resources/nano/.nanorc`: Nano text editor configuration with syntax highlighting, line numbers, and custom key bindings
+- **Source of Truth**: The repository is the canonical record of your configuration; make small, reviewable changes.
+- **Idempotency**: Running the setup repeatedly yields the same result without manual cleanup.
+- **Safety**: Existing user files are preserved and backed up before being replaced.
+- **Composability**: Add or remove packages independently; each package should be self-contained.
 
-### Git
-- `src/resources/git/.gitconfig`: Git configuration with user settings, aliases, and color schemes
-- `src/resources/git/.gitignore_global`: Global gitignore file for common files to ignore
+---
 
-### Zsh
-- `src/resources/zsh/.zshrc`: Zsh shell configuration with Oh My Zsh integration
-- `src/resources/zsh/.zsh_aliases`: Custom aliases for common commands with automatic distribution detection for package managers (apt, dnf, pacman, zypper, etc.)
-- `src/resources/zsh/.zsh_functions`: Custom shell functions for productivity
+## Architecture — How it fits together 🔧
 
-### Oh My Zsh
-- `src/resources/oh-my-zsh/custom/themes/custom.zsh-theme`: Custom Oh My Zsh theme
+- Git: stores configuration and change history.
+- Stow: manages symlinks from package folders in `src/resources/` into your `$HOME`.
+- Ansible: orchestrates system packages, tool installs (e.g., Zsh, Ghostty), and runs the user-level setup steps.
+- Helper scripts: a small `bin/install.sh` and `dev/shell.sh` support one-line installs and local testing.
 
-### Ghostty
-- `src/resources/ghostty/.config/ghostty/config`: Ghostty terminal emulator configuration with Zsh as default shell, custom font, and keybindings
+> Note: `src/setup.yml` includes safe-guards to back up pre-existing files and plugins before overwriting them.
 
-## Installation
+---
 
-Run the following command to install your dotfiles:
+## Workflow — day-to-day usage 🚦
 
-```bash
-curl -sSL https://raw.githubusercontent.com/yourusername/.dotfiles/main/bin/install.sh | bash
-```
-
-This will automatically clone the repository, install prerequisites (Git, Ansible, Stow), and set up your environment.
-
-### Manual Setup
-
-1. Install the packages using Ansible:
-   ```bash
-   ansible-playbook src/setup.yml
-   ```
-
-   **Note**: If sudo requires a password on your system, use:
-   ```bash
-   ansible-playbook src/setup.yml --ask-become-pass
-   ```
-
-   Or set up passwordless sudo for your user:
-   ```bash
-   sudo visudo
-   # Add this line (replace 'username' with your actual username):
-   # username ALL=(ALL) NOPASSWD: ALL
-   ```
-
-2. Stow the configuration files:
-   ```bash
-   cd src/resources
-   stow nano git zsh oh-my-zsh
-   ```
-
-### Development Testing
-
-To test the dotfiles setup in a Docker container with interactive access:
+1. Make or edit files under `src/resources/<package>/` (e.g., `zsh/`, `git/`, `nano/`).
+2. Test locally with `./dev/shell.sh` which runs a disposable container and executes the playbook.
+3. Apply to a real machine with:
 
 ```bash
-./dev/shell.sh
+ansible-playbook src/setup.yml
 ```
 
-This script will:
-- Run a clean Ubuntu container
-- Install all required packages (Ansible, Git, Stow, etc.)
-- Execute the Ansible playbook
-- **Drop you into an interactive bash shell** for testing and inspection
-- Type `exit` to leave the container
+4. Use Stow to manage symlinks (Ansible handles this automatically in the playbook):
 
-### Usage
+```bash
+cd src/resources
+stow <package>
+```
 
-- Add your dotfiles to the appropriate directories.
-- Use Stow to manage symlinks:
-  ```bash
-  stow <package>
-  ```
-- Commit and push changes to Git for version control.
+---
 
-## Contributing
+## Adding a new package 🧩
 
-Feel free to contribute by adding your own dotfiles or improving the automation scripts.
+- Create a new folder in `src/resources/<package>/` and add files with their intended target paths (dotfiles at the top level of the package).
+- Optionally add an Ansible task/role if system-wide packages or services are required.
+- Test via `dev/shell.sh` and then run `ansible-playbook src/setup.yml`.
 
-## License
+---
 
-This project is licensed under the MIT License.
+## Safety & Backups 🔐
+
+This project favors safety: when a file in the home directory would be overwritten, the playbook moves the existing file to a timestamped backup location (e.g., `~/.dotfiles-backups/<epoch>/`). Review backups before removing them.
