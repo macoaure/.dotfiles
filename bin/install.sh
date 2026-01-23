@@ -2,7 +2,7 @@
 
 set -e
 
-REPO_URL="https://github.com/yourusername/.dotfiles.git"
+REPO_URL="https://github.com/macoaure/.dotfiles.git"
 
 DOTFILES_DIR="$HOME/.dotfiles"
 

@@ -61,3 +61,47 @@ stow <package>
 ## Safety & Backups 🔐
 
 This project favors safety: when a file in the home directory would be overwritten, the playbook moves the existing file to a timestamped backup location (e.g., `~/.dotfiles-backups/<epoch>/`). Review backups before removing them.
+
+---
+
+## Installation ✅
+
+Quick install (one-liner):
+
+```bash
+curl -sSL https://raw.githubusercontent.com/macoaure/.dotfiles/main/bin/install.sh | bash
+```
+
+Manual install:
+
+1. Clone the repo:
+
+```bash
+git clone https://github.com/macoaure/.dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
+```
+
+2. Run the Ansible playbook (use `--ask-become-pass` if your sudo requires a password):
+
+```bash
+ansible-playbook src/setup.yml
+# or
+ansible-playbook src/setup.yml --ask-become-pass
+```
+
+3. Stow packages (if needed):
+
+```bash
+cd src/resources
+stow <package>
+```
+
+Testing in a disposable environment:
+
+```bash
+./dev/shell.sh
+```
+
+---
+
+For more details see the sections above and the `bin` and `dev` helper scripts.
