@@ -26,6 +26,36 @@
         state: present
       become: true
 
+    - name: Check for existing ~/.zshrc
+      stat:
+        path: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+      register: zshrc_stat
+      tags: stow
+
+    - name: Create backup dir for existing ~/.zshrc (if present)
+      file:
+        path: "{{ ansible_facts['env']['HOME'] }}/.dotfiles-backups/{{ ansible_date_time.epoch }}/zsh"
+        state: directory
+        mode: '0755'
+      when: zshrc_stat.stat.exists and not zshrc_stat.stat.islnk
+      tags: stow
+
+    - name: Backup existing ~/.zshrc if it's a regular file (not a symlink)
+      copy:
+        src: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+        dest: "{{ ansible_facts['env']['HOME'] }}/.dotfiles-backups/{{ ansible_date_time.epoch }}/zsh/.zshrc"
+        remote_src: yes
+        force: yes
+      when: zshrc_stat.stat.exists and not zshrc_stat.stat.islnk
+      tags: stow
+
+    - name: Remove existing ~/.zshrc blocking stow
+      file:
+        path: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+        state: absent
+      when: zshrc_stat.stat.exists and not zshrc_stat.stat.islnk
+      tags: stow
+
     - name: Ensure Stow is installed
       package:
         name: stow
@@ -436,7 +466,7 @@
         done
       args:
         executable: /bin/bash
-      loop: "{{ query('fileglob', '~/.dotfiles/src/resources/*') | map('basename') | list }}"
+      loop: "{{ lookup('fileglob', playbook_dir + '/resources/*') | map('basename') | list }}"
       when: item is defined
       tags: stow
 
@@ -444,5 +474,5 @@
       command: stow -t "{{ ansible_facts['env']['HOME'] }}" -R {{ item }}
       args:
         chdir: "{{ ansible_facts['env']['HOME'] }}/.dotfiles/src/resources"
-      loop: "{{ query('fileglob', '~/.dotfiles/src/resources/*') | map('basename') | list }}"
+      loop: "{{ lookup('fileglob', playbook_dir + '/resources/*') | map('basename') | list }}"
       ignore_errors: yes
