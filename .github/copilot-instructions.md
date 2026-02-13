@@ -33,7 +33,7 @@ Structural decisions prioritize minimalism and cross-platform compatibility.
 ## Integration Points
 - **External Dependencies**: Ansible handles package installation (e.g., `apt`, `brew`) via roles.
 - **Secrets**: Use Ansible Vault for sensitive data; never commit plain text.
-- **Cross-Platform**: Use `when` conditionals for OS-specific tasks, e.g., `when: ansible_os_family == 'Debian'`.
+- **Cross-Platform**: Use `when` conditionals for OS-specific tasks, e.g., `when: ansible_facts.get("os_family") == 'Debian'`. (avoid `INJECT_FACTS_AS_VARS`-style globals) 
 - **Communication**: Roles communicate via shared facts or variables; avoid tight coupling.
 
 ## Key Files

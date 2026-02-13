@@ -9,7 +9,7 @@ This ruleset defines coding standards for Ansible playbooks, roles, and tasks in
 - **Variables**: Use descriptive variable names; define in `vars/` or `group_vars/`.
 - **Templates**: Use Jinja2 templates for dynamic configs (e.g., `roles/zsh/templates/.zshrc.j2`).
 - **Tags**: Tag tasks for selective execution (e.g., `--tags zsh`).
-- **Cross-Platform**: Use `when` conditionals for OS-specific logic (e.g., `when: ansible_os_family == 'Debian'`).
+- **Cross-Platform**: Use `when` conditionals for OS-specific logic (e.g., `when: ansible_facts.get("os_family") == 'Debian'`).
 - **Secrets**: Use Ansible Vault for sensitive data; never hardcode.
 - **Documentation**: Comment complex tasks; use YAML formatting consistently.
 

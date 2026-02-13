@@ -45,7 +45,7 @@
               echo "Installed Ghostty from official binary release"
             fi
           become: true
-          when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+          when: ansible_facts.get("distribution") in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
           tags: ghostty
 
         - name: Install Ghostty on Fedora/RHEL
@@ -53,7 +53,7 @@
             name: ghostty
             state: present
           become: true
-          when: ansible_distribution in ['Fedora', 'RedHat', 'CentOS', 'AlmaLinux', 'Rocky']
+          when: ansible_facts.get("distribution") in ['Fedora', 'RedHat', 'CentOS', 'AlmaLinux', 'Rocky']
           tags: ghostty
 
         - name: Install Ghostty on Arch Linux
@@ -61,7 +61,7 @@
             name: ghostty
             state: present
           become: true
-          when: ansible_distribution in ['Archlinux', 'Manjaro', 'EndeavourOS']
+          when: ansible_facts.get("distribution") in ['Archlinux', 'Manjaro', 'EndeavourOS']
           tags: ghostty
 
         - name: Install Ghostty on SUSE
@@ -69,7 +69,7 @@
             name: ghostty
             state: present
           become: true
-          when: ansible_distribution in ['openSUSE', 'SLES']
+          when: ansible_facts.get("distribution") in ['openSUSE', 'SLES']
           tags: ghostty
 
         - name: Install Ghostty on Alpine
@@ -77,7 +77,7 @@
             name: ghostty
             state: present
           become: true
-          when: ansible_distribution == 'Alpine'
+          when: ansible_facts.get("distribution") == 'Alpine'
           tags: ghostty
       rescue:
         - name: Try installing Ghostty from official binary release
@@ -101,7 +101,7 @@
         name: x-terminal-emulator
         path: /usr/bin/ghostty
       become: true
-      when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+      when: ansible_facts.get("distribution") in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
       ignore_errors: yes
       tags: ghostty
 
@@ -116,7 +116,7 @@
           echo 'export TERMINAL=ghostty' | sudo tee /etc/profile.d/terminal.sh >/dev/null
         fi
       become: true
-      when: ansible_distribution in ['Archlinux', 'Manjaro', 'EndeavourOS']
+      when: ansible_facts.get("distribution") in ['Archlinux', 'Manjaro', 'EndeavourOS']
       ignore_errors: yes
       tags: ghostty
 
@@ -125,7 +125,7 @@
         name: x-terminal-emulator
         path: /usr/bin/ghostty
       become: true
-      when: ansible_distribution == 'Alpine'
+      when: ansible_facts.get("distribution") == 'Alpine'
       ignore_errors: yes
       tags: ghostty
 
@@ -148,25 +148,25 @@
         - name: Add Docker GPG key (Ubuntu/Debian)
           shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
           become: true
-          when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+          when: ansible_facts.get("distribution") in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
           tags: docker
 
         - name: Add Docker repository (Ubuntu/Debian)
           shell: echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu focal stable' | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
           become: true
-          when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+          when: ansible_facts.get("distribution") in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
           tags: docker
 
         - name: Install Docker Engine (Ubuntu/Debian)
           shell: sudo apt-get update && sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
           become: true
-          when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+          when: ansible_facts.get("distribution") in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
           tags: docker
 
         - name: Add user to docker group (Ubuntu/Debian)
           shell: sudo usermod -aG docker $USER
           become: true
-          when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+          when: ansible_facts.get("distribution") in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
           tags: docker
 
         - name: Install Docker on Fedora
@@ -183,7 +183,7 @@
             # Add user to docker group
             sudo usermod -aG docker $USER
           become: true
-          when: ansible_distribution == 'Fedora'
+          when: ansible_facts.get("distribution") == 'Fedora'
           tags: docker
 
         - name: Install Docker on RHEL/CentOS
@@ -200,7 +200,7 @@
             # Add user to docker group
             sudo usermod -aG docker $USER
           become: true
-          when: ansible_distribution in ['RedHat', 'CentOS', 'AlmaLinux', 'Rocky']
+          when: ansible_facts.get("distribution") in ['RedHat', 'CentOS', 'AlmaLinux', 'Rocky']
           tags: docker
 
         - name: Install Docker on Arch Linux
@@ -215,7 +215,7 @@
             # Add user to docker group
             sudo usermod -aG docker $USER
           become: true
-          when: ansible_distribution in ['Archlinux', 'Manjaro', 'EndeavourOS']
+          when: ansible_facts.get("distribution") in ['Archlinux', 'Manjaro', 'EndeavourOS']
           tags: docker
 
         - name: Install Docker on SUSE
@@ -230,7 +230,7 @@
             # Add user to docker group
             sudo usermod -aG docker $USER
           become: true
-          when: ansible_distribution in ['openSUSE', 'SLES']
+          when: ansible_facts.get("distribution") in ['openSUSE', 'SLES']
           tags: docker
 
         - name: Install Docker on Alpine
@@ -245,7 +245,7 @@
             # Add user to docker group
             sudo addgroup $USER docker
           become: true
-          when: ansible_distribution == 'Alpine'
+          when: ansible_facts.get("distribution") == 'Alpine'
           tags: docker
       rescue:
         - name: Warn about Docker installation failure
@@ -264,7 +264,7 @@
             apt update -y
             apt install -y mise
           become: true
-          when: ansible_distribution in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
+          when: ansible_facts.get("distribution") in ['Ubuntu', 'Debian', 'Pop', 'Linuxmint']
           tags: mise
 
         - name: Install mise on Fedora/RHEL (COPR)
@@ -273,7 +273,7 @@
             dnf copr enable jdxcode/mise -y
             dnf install -y mise
           become: true
-          when: ansible_distribution in ['Fedora', 'RedHat', 'CentOS', 'AlmaLinux', 'Rocky']
+          when: ansible_facts.get("distribution") in ['Fedora', 'RedHat', 'CentOS', 'AlmaLinux', 'Rocky']
           tags: mise
 
         - name: Install mise on Arch
@@ -281,7 +281,7 @@
             name: mise
             state: present
           become: true
-          when: ansible_distribution in ['Archlinux', 'Manjaro', 'EndeavourOS']
+          when: ansible_facts.get("distribution") in ['Archlinux', 'Manjaro', 'EndeavourOS']
           tags: mise
 
         - name: Install mise on Alpine
@@ -289,7 +289,7 @@
             name: mise
             state: present
           become: true
-          when: ansible_distribution == 'Alpine'
+          when: ansible_facts.get("distribution") == 'Alpine'
           tags: mise
 
         - name: Install mise on SUSE
@@ -297,7 +297,7 @@
             zypper refresh
             zypper install -y mise
           become: true
-          when: ansible_distribution in ['openSUSE', 'SLES']
+          when: ansible_facts.get("distribution") in ['openSUSE', 'SLES']
           tags: mise
 
         - name: Fallback - install mise via mise.run (shell installer)
