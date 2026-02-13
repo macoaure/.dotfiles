@@ -73,7 +73,7 @@ fi
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 plugins=(
-    sudo git macos vscode history command-not-found copypath cp thefuck
+    sudo git macos vscode history command-not-found copypath cp
     colorize safe-paste systemadmin aliases git
 )
 
@@ -102,17 +102,8 @@ source "$ZSH/oh-my-zsh.sh"
 
 function reload() {
     source $HOME/.zshrc
+    echo ":sparkles: Zsh configuration reloaded!"
 }
-
-
-# function cd() {
-#     builtin cd "$@"
-#     if [ ! -d .git ]; then
-#         return
-#     else
-#         git status
-#     fi
-# }
 
 
 function extract() {
