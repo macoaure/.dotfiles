@@ -1,107 +1,75 @@
-# macoaure/.dotfiles
+<div align="center">
+  <img src="assets/logo.svg" alt=".dotfiles" width="96" /><br/><br/>
+  <strong>macoaure/.dotfiles</strong><br/>
+  <sub>Personal environment as infrastructure — declarative, reproducible, Arch Linux.</sub>
 
-> [!WARNING]
-> This is a personal repository, do not use it as-is without understanding its contents and implications.
+  <br/><br/>
 
-This repository is a small, practical system for treating a personal environment as _infrastructure_. It captures the idea that your shell, editor, and common tool configurations should be:
-
-- **Declarative** — stored as files in version control (Git)
-- **Reproducible** — deployable to any machine with minimal steps (Ansible)
-- **Non-invasive** — symlinked into your home directory without clutter (Stow)
-
----
-
-## Core Principles ✨
-
-- **Source of Truth**: The repository is the canonical record of your configuration; make small, reviewable changes.
-- **Idempotency**: Running the setup repeatedly yields the same result without manual cleanup.
-- **Safety**: Existing user files are preserved and backed up before being replaced.
-- **Composability**: Add or remove packages independently; each package should be self-contained.
+  [![Test](https://github.com/macoaure/.dotfiles/actions/workflows/test.yml/badge.svg)](https://github.com/macoaure/.dotfiles/actions/workflows/test.yml)
+  ![Platform](https://img.shields.io/badge/platform-Arch%20Linux-1793D1?logo=arch-linux&logoColor=white)
+  ![Ansible](https://img.shields.io/badge/provisioned%20by-Ansible-EE0000?logo=ansible&logoColor=white)
+  ![Stow](https://img.shields.io/badge/symlinks-GNU%20Stow-4B8BBB?logo=gnu&logoColor=white)
+</div>
 
 ---
 
-## Architecture — How it fits together 🔧
-
-- Git: stores configuration and change history.
-- Stow: manages symlinks from package folders in `src/resources/` into your `$HOME`.
-- Ansible: orchestrates system packages, tool installs (e.g., Zsh, Ghostty), and runs the user-level setup steps.
-- Helper scripts: a small `bin/install.sh` and `dev/shell.sh` support one-line installs and local testing.
-
-> Note: `src/setup.yml` includes safe-guards to back up pre-existing files and plugins before overwriting them.
-
----
-
-## Workflow — day-to-day usage 🚦
-
-1. Make or edit files under `src/resources/<package>/` (e.g., `zsh/`, `git/`, `nano/`).
-2. Test locally with `./dev/shell.sh` which runs a disposable container and executes the playbook.
-3. Apply to a real machine with:
-
-```bash
-ansible-playbook src/setup.yml
-```
-
-4. Use Stow to manage symlinks (Ansible handles this automatically in the playbook):
-
-```bash
-cd src/resources
-stow <package>
-```
-
----
-
-## Adding a new package 🧩
-
-- Create a new folder in `src/resources/<package>/` and add files with their intended target paths (dotfiles at the top level of the package).
-- Optionally add an Ansible task/role if system-wide packages or services are required.
-- Test via `dev/shell.sh` and then run `ansible-playbook src/setup.yml`.
-
----
-
-## Safety & Backups 🔐
-
-This project favors safety: when a file in the home directory would be overwritten, the playbook moves the existing file to a timestamped backup location (e.g., `~/.dotfiles-backups/<epoch>/`). Review backups before removing them.
-
----
-
-## Installation ✅
-
-Quick install (one-liner):
+## Quickstart
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/macoaure/.dotfiles/main/bin/install.sh | bash
 ```
 
-Manual install:
-
-1. Clone the repo:
+Or manually:
 
 ```bash
+sudo pacman -S git ansible
 git clone https://github.com/macoaure/.dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
+cd ~/.dotfiles && ansible-playbook src/setup.yml --ask-become-pass
 ```
 
-2. Run the Ansible playbook (use `--ask-become-pass` if your sudo requires a password):
+> Existing dotfiles are backed up to `~/.dotfiles-backups/<epoch>/` before any overwrite.
+
+---
+
+## Structure
+
+| Path | Purpose |
+|---|---|
+| `src/roles/` | Ansible roles — one per tool (`base`, `zsh`, `docker`, `mise`, `vscode`, …) |
+| `src/resources/` | Stow packages — configs symlinked into `$HOME` |
+| `tests/` | Feature + integration tests (run in Docker) |
+| `dev/shell.sh` | Interactive Arch Linux container for local testing |
+
+---
+
+## Commands
 
 ```bash
-ansible-playbook src/setup.yml
-# or
+# Deploy
 ansible-playbook src/setup.yml --ask-become-pass
-```
 
-3. Stow packages (if needed):
+# Dry-run
+ansible-playbook src/setup.yml --check --diff
 
-```bash
-cd src/resources
-stow <package>
-```
+# Single role
+ansible-playbook src/setup.yml --tags <role>
 
-Testing in a disposable environment:
+# Run tests
+./tests/run-all.sh [--verbose]
 
-```bash
+# Interactive dev shell
 ./dev/shell.sh
 ```
 
 ---
 
-For more details see the sections above and the `bin` and `dev` helper scripts.
+## Adding a package
+
+1. Create `src/resources/<package>/` mirroring `$HOME` paths.
+2. Add a role in `src/roles/<package>/tasks/main.yml` if system packages are needed.
+3. Test with `./dev/shell.sh`, then deploy.
+
+---
+
+> [!WARNING]
+> Personal repository — review before use. Arch Linux only.
