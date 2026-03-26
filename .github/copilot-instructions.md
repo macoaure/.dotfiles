@@ -13,7 +13,7 @@ This repository manages dotfiles using Ansible for automation, Git for version c
 - **Playbook**: Use `playbook.yml` to orchestrate setup, including role application and system tasks.
 - **Data Flow**: Git repo → Stow creates symlinks in `~/` → Ansible configures tools and dependencies.
 
-Structural decisions prioritize minimalism and cross-platform compatibility.
+Structural decisions prioritize minimalism. Target OS is Arch Linux (Archlinux, Manjaro, EndeavourOS) only.
 
 ## Developer Workflows
 - **Setup**: `git clone <repo>; cd .dotfiles; ansible-playbook setup.yml`
@@ -31,9 +31,8 @@ Structural decisions prioritize minimalism and cross-platform compatibility.
 - **Idempotency**: Ensure playbooks run multiple times safely.
 
 ## Integration Points
-- **External Dependencies**: Ansible handles package installation (e.g., `apt`, `brew`) via roles.
+- **External Dependencies**: Ansible handles package installation via `pacman` (Arch Linux only).
 - **Secrets**: Use Ansible Vault for sensitive data; never commit plain text.
-- **Cross-Platform**: Use `when` conditionals for OS-specific tasks, e.g., `when: ansible_facts.get("os_family") == 'Debian'`. (avoid `INJECT_FACTS_AS_VARS`-style globals) 
 - **Communication**: Roles communicate via shared facts or variables; avoid tight coupling.
 
 ## Key Files

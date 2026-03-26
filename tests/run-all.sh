@@ -28,58 +28,36 @@ for test_script in tests/feature/*.sh; do
 done
 echo "✅ All feature tests passed"
 
-# Unit and Integration tests on multiple OS
-images=("ubuntu:20.04" "archlinux:latest")
+# Unit and Integration tests on Arch Linux
+image="archlinux:latest"
+echo "🐳 Running tests on $image"
 
-for image in "${images[@]}"; do
-  echo "🐳 Running tests on $image"
-  if $VERBOSE; then
-    # Verbose mode: show all output
-    if docker run --rm -v "$PROJECT_ROOT:/repo" $image bash -c "
-      set -e
-      cd /repo
-      # Install dependencies based on OS (quiet mode)
-      if command -v apt &> /dev/null; then
-        apt update -qq && apt install -y -qq ansible git stow python3-apt
-      elif command -v pacman &> /dev/null; then
-        pacman -Syu --noconfirm --quiet && pacman -S --noconfirm --quiet ansible git stow
-      fi
-      # Run unit tests
-      echo '🧪 Unit tests...'
-      bash tests/unit/test-syntax.sh
-      # Run integration tests
-      echo '🔗 Integration tests...'
-      bash tests/integration/test-full.sh
-    "; then
-      echo "✅ Tests passed on $image"
-    else
-      echo "❌ Tests failed on $image"
-      exit 1
-    fi
+run_in_docker() {
+  docker run --rm -v "$PROJECT_ROOT:/repo" "$image" bash -c "
+    set -e
+    cd /repo
+    pacman -Syu --noconfirm --quiet && pacman -S --noconfirm --quiet ansible git stow 2>/dev/null
+    echo '🧪 Unit tests...'
+    bash tests/unit/test-syntax.sh
+    echo '🔗 Integration tests...'
+    bash tests/integration/test-full.sh
+  "
+}
+
+if $VERBOSE; then
+  if run_in_docker; then
+    echo "✅ Tests passed on $image"
   else
-    # Quiet mode: suppress installation output, show only results
-    if docker run --rm -v "$PROJECT_ROOT:/repo" $image bash -c "
-      set -e
-      cd /repo
-      # Install dependencies based on OS (quiet mode)
-      if command -v apt &> /dev/null; then
-        apt update -qq && apt install -y -qq ansible git stow python3-apt
-      elif command -v pacman &> /dev/null; then
-        pacman -Syu --noconfirm --quiet && pacman -S --noconfirm --quiet ansible git stow
-      fi
-      # Run unit tests
-      echo '🧪 Unit tests...'
-      bash tests/unit/test-syntax.sh
-      # Run integration tests
-      echo '🔗 Integration tests...'
-      bash tests/integration/test-full.sh
-    " > /dev/null 2>&1; then
-      echo "✅ Tests passed on $image"
-    else
-      echo "❌ Tests failed on $image"
-      exit 1
-    fi
+    echo "❌ Tests failed on $image"
+    exit 1
   fi
-done
+else
+  if run_in_docker > /dev/null 2>&1; then
+    echo "✅ Tests passed on $image"
+  else
+    echo "❌ Tests failed on $image"
+    exit 1
+  fi
+fi
 
 echo "🎉 All tests passed!"
