@@ -1,0 +1,12 @@
+model = "gpt-5.4"
+[projects."/home/vector/Documents/maco-studios/projects/beali"]
+trust_level = "trusted"
+
+[projects."/home/vector/Documents/pjcont/projects/pinheiro"]
+trust_level = "trusted"
+
+[projects."/home/vector/Documents/pjcont/projects/contar"]
+trust_level = "trusted"
+
+[notice.model_migrations]
+"gpt-5.3-codex" = "gpt-5.4"
