@@ -140,6 +140,7 @@ _bar() {
 
 # Run ansible in background, capture output
 _tmpfile=$(mktemp)
+_logfile="$HOME/.dotfiles-install.log"
 trap 'rm -f "$_tmpfile"' EXIT
 
 ANSIBLE_FORCE_COLOR=0 ansible-playbook src/setup.yml \
@@ -149,20 +150,43 @@ _pid=$!
 
 echo ""
 _current=0
+_fatal_detected=0
 while kill -0 "$_pid" 2>/dev/null; do
     _current=$(grep -cE "^(ok|changed|skipping|fatal):" "$_tmpfile" 2>/dev/null || true)
     [[ "$_current" -gt "$total" ]] && _current=$total
     _bar "$_current" "$total"
+
+    # Detect fatal errors early — no need to keep waiting
+    if grep -qE "^fatal:" "$_tmpfile" 2>/dev/null; then
+        _fatal_detected=1
+        break
+    fi
+
     sleep 0.15
 done
 
 wait "$_pid"; _rc=$?
-_bar "$total" "$total"
-echo -e "\n"
+# Clear the progress bar line before any output
+printf "\r\033[K"
 
-if [[ "$_rc" -ne 0 ]]; then
-    echo -e "  ${R}✗ Ansible failed. Full output:${NC}\n"
-    cat "$_tmpfile"
+if [[ "$_rc" -ne 0 ]] || [[ "$_fatal_detected" -ne 0 ]]; then
+    # Save full log before the tmpfile is cleaned up
+    cp "$_tmpfile" "$_logfile"
+
+    echo -e "  ${R}✗ Ansible failed${NC}\n"
+
+    # Show failing task and error context
+    if grep -qE "^fatal:" "$_tmpfile" 2>/dev/null; then
+        echo -e "  ${Y}Failing task:${NC}"
+        grep -B2 "^fatal:" "$_tmpfile" | grep "^TASK" | tail -1 | sed 's/^/    /'
+        echo ""
+        echo -e "  ${Y}Error:${NC}"
+        grep -A3 "^fatal:" "$_tmpfile" | head -20 | sed 's/^/    /'
+        echo ""
+    fi
+
+    echo -e "  ${D}Full log saved to: ${W}$_logfile${NC}"
+    echo -e "  ${D}Run ${W}cat $_logfile${D} to see complete output.${NC}\n"
     exit 1
 fi
 ok "Playbook completed"
