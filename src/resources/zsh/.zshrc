@@ -145,8 +145,3 @@ function weather() {
 }
 
 export PATH=$PATH:/home/vector/.local/share/mise/installs/php/8.4.13/bin:/home/vector/.local/share/mise/installs/php/8.4.13/.composer/vendor/bin
-
-# Set Ghostty as default terminal if available
-if command -v ghostty >/dev/null 2>&1; then
-    export TERMINAL=ghostty
-fi
