@@ -102,11 +102,65 @@ fi
 step 5 5 "Running Ansible playbook"
 echo ""
 
-if [[ -n "$SELECTED_TAGS" ]]; then
-    ansible-playbook src/setup.yml --ask-become-pass --tags "$SELECTED_TAGS"
-else
-    ansible-playbook src/setup.yml --ask-become-pass
+# Ask for sudo password upfront so ansible runs non-interactively in background
+echo -ne "  ${D}[sudo] become password: ${NC}"
+read -rs become_pass
+echo ""
+
+tag_args=()
+[[ -n "$SELECTED_TAGS" ]] && tag_args=(--tags "$SELECTED_TAGS")
+
+# Count total tasks for progress bar
+info "Preparing..."
+total=$(ANSIBLE_FORCE_COLOR=0 ansible-playbook src/setup.yml \
+    -e "ansible_become_pass=$become_pass" \
+    --list-tasks "${tag_args[@]}" 2>/dev/null \
+    | grep -cE "^\s{6}" || true)
+[[ "$total" -lt 1 ]] && total=1
+
+# Progress bar renderer
+_bar() {
+    local current=$1 total=$2 width=36
+    local pct=$(( current * 100 / total ))
+    local filled=$(( current * width / total ))
+    local empty=$(( width - filled ))
+    local task
+    task=$(grep -oP "(?<=TASK \[)[^\]]+" "$_tmpfile" 2>/dev/null | tail -1 | cut -c1-32)
+
+    printf "\r  ${B}[${NC}"
+    printf "%${filled}s" | tr ' ' '█'
+    printf "${D}%${empty}s${NC}" | tr ' ' '░'
+    printf "${B}]${NC} ${W}%3d%%${NC}  ${D}%-32s${NC}" "$pct" "$task"
+}
+
+# Run ansible in background, capture output
+_tmpfile=$(mktemp)
+trap 'rm -f "$_tmpfile"' EXIT
+
+ANSIBLE_FORCE_COLOR=0 ansible-playbook src/setup.yml \
+    -e "ansible_become_pass=$become_pass" \
+    "${tag_args[@]}" > "$_tmpfile" 2>&1 &
+_pid=$!
+
+echo ""
+_current=0
+while kill -0 "$_pid" 2>/dev/null; do
+    _current=$(grep -cE "^(ok|changed|skipping|fatal):" "$_tmpfile" 2>/dev/null || true)
+    [[ "$_current" -gt "$total" ]] && _current=$total
+    _bar "$_current" "$total"
+    sleep 0.15
+done
+
+wait "$_pid"; _rc=$?
+_bar "$total" "$total"
+echo -e "\n"
+
+if [[ "$_rc" -ne 0 ]]; then
+    echo -e "  ${R}✗ Ansible failed. Full output:${NC}\n"
+    cat "$_tmpfile"
+    exit 1
 fi
+ok "Playbook completed"
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
