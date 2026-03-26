@@ -122,19 +122,20 @@ total=$(ANSIBLE_FORCE_COLOR=0 ansible-playbook src/setup.yml \
     | grep -cE "^\s{6}" || true)
 [[ "$total" -lt 1 ]] && total=1
 
-# Progress bar renderer
+# Progress bar renderer (loop-based to support UTF-8 multibyte chars)
 _bar() {
     local current=$1 total=$2 width=36
     local pct=$(( current * 100 / total ))
     local filled=$(( current * width / total ))
     local empty=$(( width - filled ))
-    local task
+    local bar="" i task
+
+    for ((i=0; i<filled; i++)); do bar+="█"; done
+    for ((i=0; i<empty; i++)); do bar+="░"; done
+
     task=$(grep -oP "(?<=TASK \[)[^\]]+" "$_tmpfile" 2>/dev/null | tail -1 | cut -c1-32)
 
-    printf "\r  ${B}[${NC}"
-    printf "%${filled}s" | tr ' ' '█'
-    printf "${D}%${empty}s${NC}" | tr ' ' '░'
-    printf "${B}]${NC} ${W}%3d%%${NC}  ${D}%-32s${NC}" "$pct" "$task"
+    printf "\r  ${B}[${NC}%s${B}]${NC} ${W}%3d%%${NC}  ${D}%-32s${NC}" "$bar" "$pct" "$task"
 }
 
 # Run ansible in background, capture output
