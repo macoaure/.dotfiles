@@ -1,0 +1,29 @@
+---
+
+- name: Install Docker and Docker Compose
+  block:
+    - name: Install Docker packages
+      package:
+        name:
+          - docker
+          - docker-compose
+        state: present
+      become: true
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: true
+      become: true
+
+    - name: Add user to docker group
+      user:
+        name: "{{ ansible_facts['env']['USER'] }}"
+        groups: docker
+        append: true
+      become: true
+  rescue:
+    - name: Warn about Docker installation failure
+      debug:
+        msg: "Docker installation failed. Please install manually from https://docs.docker.com/get-docker/"

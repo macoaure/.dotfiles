@@ -1,0 +1,28 @@
+---
+
+- name: Prepare backups for stow conflicts
+  shell: |
+    set -euo pipefail
+    pkg="{{ item }}"
+    src="{{ ansible_facts['env']['HOME'] }}/.dotfiles/src/resources/$pkg"
+    ts="{{ ansible_facts['date_time']['epoch'] }}"
+    backup_dir="{{ ansible_facts['env']['HOME'] }}/.dotfiles-backups/$ts/$pkg"
+    mkdir -p "$backup_dir"
+    for f in $(cd "$src" && find . -mindepth 1 -maxdepth 1 -printf '%P\n'); do
+      tgt="{{ ansible_facts['env']['HOME'] }}/$f"
+      if [ -e "$tgt" ]; then
+        mkdir -p "$(dirname "$backup_dir/$f")"
+        mv "$tgt" "$backup_dir/$f"
+      fi
+    done
+  args:
+    executable: /bin/bash
+  loop: "{{ lookup('fileglob', playbook_dir + '/../resources/*') | map('basename') | list }}"
+  when: item is defined
+
+- name: Stow all packages
+  command: stow -t "{{ ansible_facts['env']['HOME'] }}" -R {{ item }}
+  args:
+    chdir: "{{ ansible_facts['env']['HOME'] }}/.dotfiles/src/resources"
+  loop: "{{ lookup('fileglob', playbook_dir + '/../resources/*') | map('basename') | list }}"
+  ignore_errors: yes

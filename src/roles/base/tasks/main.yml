@@ -1,0 +1,25 @@
+---
+
+- name: Ensure Git is installed
+  package:
+    name: git
+    state: present
+  become: true
+
+- name: Ensure Nano is installed
+  package:
+    name: nano
+    state: present
+  become: true
+
+- name: Ensure Zsh is installed
+  package:
+    name: zsh
+    state: present
+  become: true
+
+- name: Ensure Stow is installed
+  package:
+    name: stow
+    state: present
+  become: true

@@ -1,0 +1,27 @@
+---
+
+- name: Install Cursor AI editor (cursor-bin from AUR)
+  shell: yay -S --noconfirm cursor-bin
+  become: true
+  become_user: builduser
+  args:
+    creates: /usr/bin/cursor
+  when: not ansible_check_mode
+
+- name: Ensure ~/.cursor/skills/gitmoji-commits directory exists
+  file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.cursor/skills/gitmoji-commits"
+    state: directory
+    mode: '0755'
+
+- name: Symlink Cursor config files
+  file:
+    src: "{{ (role_path + '/../../resources/cursor/' + item) | realpath }}"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.cursor/{{ item }}"
+    state: link
+    force: yes
+  loop:
+    - .gitignore
+    - cli-config.json
+    - skills/gitmoji-commits/SKILL.md
+    - skills/gitmoji-commits/reference.md

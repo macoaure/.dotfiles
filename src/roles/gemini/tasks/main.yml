@@ -1,0 +1,37 @@
+---
+
+- name: Ensure ~/.gemini and ~/.gemini/antigravity/skills directories exist
+  file:
+    path: "{{ ansible_facts['env']['HOME'] }}/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - .gemini
+    - .gemini/antigravity
+    - .gemini/antigravity/skills
+
+- name: Symlink Gemini config file
+  file:
+    src: "{{ (role_path + '/../../resources/gemini/GEMINI.md') | realpath }}"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.gemini/GEMINI.md"
+    state: link
+    force: yes
+
+- name: Symlink Gemini skills (shared with Claude)
+  file:
+    src: "{{ (role_path + '/../../resources/claude/skills/' + item) | realpath }}"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.gemini/antigravity/skills/{{ item }}"
+    state: link
+    force: yes
+  loop:
+    - adapt
+    - animate
+    - audit
+    - clarify
+    - colorize
+    - delight
+    - distill
+    - normalize
+    - onboard
+    - polish
+    - quieter

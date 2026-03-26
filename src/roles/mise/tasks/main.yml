@@ -1,0 +1,28 @@
+---
+
+- name: Install mise
+  block:
+    - name: Install mise package
+      package:
+        name: mise
+        state: present
+      become: true
+
+    - name: Fallback - install mise via shell installer
+      shell: |
+        if ! command -v mise >/dev/null 2>&1; then
+          curl -fsSL https://mise.run/zsh | MISE_INSTALL_PATH="$HOME/.local/bin" sh
+        fi
+      args:
+        executable: /bin/bash
+  rescue:
+    - name: Warn about mise installation failure
+      debug:
+        msg: "mise installation failed. Please install manually from https://mise.jdx.dev/installing-mise.html"
+
+- name: Ensure mise activate present in .zshrc
+  lineinfile:
+    path: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+    regexp: 'eval .*mise activate zsh'
+    line: 'eval "$(mise activate zsh)"'
+    create: yes

@@ -1,0 +1,126 @@
+---
+
+- name: Check for existing ~/.zshrc
+  stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+  register: zshrc_stat
+
+- name: Create backup dir for existing ~/.zshrc (if present)
+  file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.dotfiles-backups/{{ ansible_facts['date_time']['epoch'] }}/zsh"
+    state: directory
+    mode: '0755'
+  when: zshrc_stat.stat.exists and not zshrc_stat.stat.islnk
+
+- name: Backup existing ~/.zshrc if it's a regular file (not a symlink)
+  copy:
+    src: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.dotfiles-backups/{{ ansible_facts['date_time']['epoch'] }}/zsh/.zshrc"
+    remote_src: yes
+    force: yes
+  when: zshrc_stat.stat.exists and not zshrc_stat.stat.islnk
+
+- name: Remove existing ~/.zshrc blocking stow
+  file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+    state: absent
+  when: zshrc_stat.stat.exists and not zshrc_stat.stat.islnk
+
+- name: Check for existing Oh My Zsh install
+  stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh"
+  register: ohmyzsh_stat
+
+- name: Backup existing Oh My Zsh if present
+  command: mv "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh" "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh.bak-{{ ansible_facts['date_time']['epoch'] }}"
+  when: ohmyzsh_stat.stat.exists
+
+- name: Install Oh My Zsh
+  shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  args:
+    creates: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh"
+
+- name: Check for existing Powerlevel10k
+  stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/themes/powerlevel10k"
+  register: p10k_stat
+
+- name: Backup existing Powerlevel10k if present
+  command: mv "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/themes/powerlevel10k" "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/themes/powerlevel10k.bak-{{ ansible_facts['date_time']['epoch'] }}"
+  when: p10k_stat.stat.exists
+
+- name: Install Powerlevel10k theme
+  git:
+    repo: https://github.com/romkatv/powerlevel10k.git
+    dest: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/themes/powerlevel10k"
+    version: master
+    force: yes
+  when: not ansible_check_mode
+
+- name: Check for existing zsh-syntax-highlighting
+  stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+  register: zsh_syntax_stat
+
+- name: Backup existing zsh-syntax-highlighting if present
+  command: mv "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting.bak-{{ ansible_facts['date_time']['epoch'] }}"
+  when: zsh_syntax_stat.stat.exists
+
+- name: Install zsh-syntax-highlighting plugin
+  git:
+    repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
+    dest: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+    version: master
+    force: yes
+  when: not ansible_check_mode
+
+- name: Check for existing zsh-autosuggestions
+  stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+  register: zsh_autosug_stat
+
+- name: Backup existing zsh-autosuggestions if present
+  command: mv "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions" "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions.bak-{{ ansible_facts['date_time']['epoch'] }}"
+  when: zsh_autosug_stat.stat.exists
+
+- name: Install zsh-autosuggestions plugin
+  git:
+    repo: https://github.com/zsh-users/zsh-autosuggestions.git
+    dest: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+    version: master
+    force: yes
+  when: not ansible_check_mode
+
+- name: Check for existing zsh-history-substring-search
+  stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-history-substring-search"
+  register: zsh_hist_stat
+
+- name: Backup existing zsh-history-substring-search if present
+  command: mv "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-history-substring-search" "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-history-substring-search.bak-{{ ansible_facts['date_time']['epoch'] }}"
+  when: zsh_hist_stat.stat.exists
+
+- name: Install zsh-history-substring-search plugin
+  git:
+    repo: https://github.com/zsh-users/zsh-history-substring-search.git
+    dest: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-history-substring-search"
+    version: master
+    force: yes
+  when: not ansible_check_mode
+
+- name: Check for existing zsh-autocomplete
+  stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-autocomplete"
+  register: zsh_auto_stat
+
+- name: Backup existing zsh-autocomplete if present
+  command: mv "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-autocomplete" "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-autocomplete.bak-{{ ansible_facts['date_time']['epoch'] }}"
+  when: zsh_auto_stat.stat.exists
+
+- name: Install zsh-autocomplete plugin
+  git:
+    repo: https://github.com/marlonrichert/zsh-autocomplete.git
+    dest: "{{ ansible_facts['env']['HOME'] }}/.oh-my-zsh/custom/plugins/zsh-autocomplete"
+    version: main
+    force: yes
+  when: not ansible_check_mode

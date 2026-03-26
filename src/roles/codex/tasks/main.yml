@@ -1,0 +1,25 @@
+---
+
+- name: Install OpenAI Codex CLI (from official Arch extra repo)
+  package:
+    name: openai-codex
+    state: present
+  become: true
+
+- name: Ensure ~/.codex/rules directory exists
+  file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.codex/rules"
+    state: directory
+    mode: '0755'
+
+- name: Symlink Codex config files
+  file:
+    src: "{{ (role_path + '/../../resources/codex/' + item) | realpath }}"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.codex/{{ item }}"
+    state: link
+    force: yes
+  loop:
+    - AGENTS.md
+    - RTK.md
+    - config.toml
+    - rules/default.rules

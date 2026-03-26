@@ -1,0 +1,42 @@
+---
+
+- name: Install base-devel and git (required for AUR/makepkg)
+  package:
+    name:
+      - base-devel
+      - git
+    state: present
+  become: true
+
+- name: Create build user for AUR operations
+  user:
+    name: builduser
+    system: true
+    shell: /bin/bash
+    create_home: true
+  become: true
+
+- name: Allow builduser passwordless sudo
+  copy:
+    dest: /etc/sudoers.d/builduser
+    content: "builduser ALL=(ALL) NOPASSWD: ALL\n"
+    mode: '0440'
+    validate: 'visudo -cf %s'
+  become: true
+
+- name: Clone yay from AUR
+  git:
+    repo: https://aur.archlinux.org/yay.git
+    dest: /tmp/yay
+    force: yes
+  become: true
+  become_user: builduser
+  when: not ansible_check_mode
+
+- name: Build and install yay
+  shell: cd /tmp/yay && makepkg -si --noconfirm
+  become: true
+  become_user: builduser
+  args:
+    creates: /usr/bin/yay
+  when: not ansible_check_mode

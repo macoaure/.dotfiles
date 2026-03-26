@@ -1,0 +1,24 @@
+---
+
+# RTK (Rust Token Killer) — token-optimized CLI proxy for Claude Code
+# Repo: https://github.com/rtk-ai/rtk
+# WARNING: Do NOT use `cargo install rtk` — that installs the wrong package (Rust Type Kit)
+
+- name: Install RTK via official shell installer
+  shell: curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh
+  args:
+    creates: "{{ ansible_facts['env']['HOME'] }}/.local/bin/rtk"
+  when: not ansible_check_mode
+
+- name: Ensure ~/.local/bin is in PATH in .zshrc
+  lineinfile:
+    path: "{{ ansible_facts['env']['HOME'] }}/.zshrc"
+    regexp: 'export PATH=.*\.local/bin'
+    line: 'export PATH="$HOME/.local/bin:$PATH"'
+    create: yes
+
+- name: Initialize RTK hooks globally
+  shell: "{{ ansible_facts['env']['HOME'] }}/.local/bin/rtk init -g"
+  args:
+    creates: "{{ ansible_facts['env']['HOME'] }}/.claude/RTK.md"
+  when: not ansible_check_mode
