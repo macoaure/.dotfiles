@@ -2,50 +2,27 @@
 
 source "$(dirname "$0")/../lib/test-helpers.sh"
 
-echo "Running Integration: Full Setup with Ghostty"
+echo "Running Integration: Full Setup"
 
 # Set up the dotfiles symlink for the test
 ln -sf /repo ~/.dotfiles
 
-# Install dependencies based on OS
-if command -v apt &> /dev/null; then
-    apt update -qq && apt install -y -qq curl lsb-release
-elif command -v pacman &> /dev/null; then
-    pacman -Syu --noconfirm --quiet && pacman -S --noconfirm --quiet curl
-fi
+# Install curl if needed
+pacman -Syu --noconfirm --quiet && pacman -S --noconfirm --quiet curl 2>/dev/null || true
 
-# Skip actual Ghostty installation in test (too slow/unreliable in containers)
-# Just verify the playbook syntax and configuration setup
-# Note: Ansible installation in containers is slow, so we skip full execution
-echo "PASS: Ghostty playbook syntax check (skipped for speed)"
+# Verify playbook syntax (full role tree)
+output=$(ansible-playbook --syntax-check src/setup.yml 2>&1)
+assert_success "Ansible playbook syntax check"
+assert_output_contains "Syntax check output" "playbook: src/setup.yml" "$output"
 
-# Note: Actual Ghostty installation may vary by system
-# We verify the playbook runs and configuration is set up correctly
+# Verify all expected roles are present
+for role in base aur-helper vscode cursor claude-code codex rtk zsh docker mise stow; do
+  assert_file_exists "Role $role exists" "src/roles/$role/tasks/main.yml"
+done
 
-# Test stow operations
-cd ~/.dotfiles/src/resources
-stow -t ~ ghostty
-assert_success "Ghostty config stow"
+# Verify stow packages are present
+assert_file_exists "zsh stow package"  "src/resources/zsh/.zshrc"
+assert_file_exists "git stow package"  "src/resources/git/.gitconfig"
+assert_file_exists "nano stow package" "src/resources/nano/.nanorc"
 
-# Verify configuration file exists
-if [ -f ~/.config/ghostty/config ]; then
-    echo "PASS: Ghostty config file exists"
-else
-    echo "FAIL: Ghostty config file not found"
-    exit 1
-fi
-
-# Test TERMINAL environment variable (only if ghostty is installed)
-source ~/.zshrc
-if command -v ghostty >/dev/null 2>&1; then
-    if [ "$TERMINAL" = "ghostty" ]; then
-        echo "PASS: TERMINAL variable set correctly"
-    else
-        echo "FAIL: TERMINAL variable not set to ghostty"
-        exit 1
-    fi
-else
-    echo "PASS: TERMINAL check skipped (ghostty not installed)"
-fi
-
-echo "Full integration test with Ghostty passed!"
+echo "Full integration test passed!"

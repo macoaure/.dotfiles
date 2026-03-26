@@ -2,45 +2,15 @@
 
 source "$(dirname "$0")/../lib/test-helpers.sh"
 
-echo "Running Feature: Docker Installation"
+echo "Running Feature: Docker role"
 
-# Test Docker installation on current system
-if command -v apt &> /dev/null; then
-    echo "Testing on Debian-based system..."
+assert_file_exists "Docker role exists" "src/roles/docker/tasks/main.yml"
 
-    # Check if Docker repository is available
-    if curl -fsSL --head "https://download.docker.com/linux/ubuntu/dists/focal/stable/binary-amd64/Packages" >/dev/null 2>&1; then
-        echo "Docker repository is accessible"
-    else
-        echo "Warning: Docker repository may not be accessible"
-    fi
+output=$(python3 -c "import yaml, sys; yaml.safe_load(open('src/roles/docker/tasks/main.yml'))" 2>&1)
+assert_success "Docker role is valid YAML"
 
-elif command -v pacman &> /dev/null; then
-    echo "Testing on Arch-based system..."
+assert_output_contains "Docker role references docker package" "docker" "$(cat src/roles/docker/tasks/main.yml)"
+assert_output_contains "Docker role enables systemd service" "systemd" "$(cat src/roles/docker/tasks/main.yml)"
 
-    # Check if Docker is available in repositories
-    output=$(pacman -Ss docker)
-    assert_success "Docker package search"
-    assert_output_contains "Docker found in repos" "docker" "$output"
-
-    # Check if docker-compose is available
-    output=$(pacman -Ss docker-compose)
-    assert_success "Docker Compose package search"
-    assert_output_contains "Docker Compose found in repos" "docker-compose" "$output"
-
-elif command -v dnf &> /dev/null; then
-    echo "Testing on Fedora/RHEL-based system..."
-
-    # Check Docker repository accessibility
-    if curl -fsSL --head "https://download.docker.com/linux/fedora/docker-ce.repo" >/dev/null 2>&1; then
-        echo "Docker repository configuration is accessible"
-    else
-        echo "Warning: Docker repository may not be accessible"
-    fi
-fi
-
-# Test that Docker configuration exists (if any config files are managed)
-# For now, just verify the installation logic is sound
 echo "Docker installation logic validated"
-
 echo "All Docker feature tests passed!"
