@@ -3,64 +3,37 @@
 set -e
 
 REPO_URL="https://github.com/macoaure/.dotfiles.git"
-
 DOTFILES_DIR="$HOME/.dotfiles"
 
-if [ -d "$DOTFILES_DIR" ]; then
-  rm -rf "$DOTFILES_DIR"
-  echo "Removed existing dotfiles directory."
-else
-  echo "Dotfiles directory does not exist. Proceeding with installation."
-fi
-
-# Install Ansible if not present
-
-if ! command -v ansible-playbook &> /dev/null; then
-
-  echo "Installing Ansible..."
-
-  if command -v apt &> /dev/null; then
-
-    sudo apt update
-
-    sudo apt install -y ansible
-
-  elif command -v yum &> /dev/null; then
-
-    sudo yum install -y ansible
-
-  elif command -v dnf &> /dev/null; then
-
-    sudo dnf install -y ansible
-
-  elif command -v brew &> /dev/null; then
-
-    brew install ansible
-
-  else
-
-    echo "Please install Ansible manually. Supported package managers: apt, yum, dnf, brew"
-
+# Verify Arch Linux
+if ! command -v pacman &> /dev/null; then
+    echo "Error: this installer requires Arch Linux (pacman not found)."
     exit 1
-
-  fi
-
 fi
 
-# Clone repo if not exists
+# Install git if needed
+if ! command -v git &> /dev/null; then
+    echo "Installing git..."
+    sudo pacman -S --noconfirm git
+fi
 
+# Install Ansible if needed
+if ! command -v ansible-playbook &> /dev/null; then
+    echo "Installing Ansible..."
+    sudo pacman -S --noconfirm ansible
+fi
+
+# Clone repo if not present
 if [ ! -d "$DOTFILES_DIR" ]; then
-
-  echo "Cloning dotfiles repository..."
-
-  git clone "$REPO_URL" "$DOTFILES_DIR"
-
+    echo "Cloning dotfiles repository..."
+    git clone "$REPO_URL" "$DOTFILES_DIR"
+else
+    echo "Dotfiles directory already exists, skipping clone."
 fi
 
 cd "$DOTFILES_DIR"
 
 echo "Running Ansible playbook..."
-
 ansible-playbook src/setup.yml --ask-become-pass
 
 echo "Dotfiles installation complete!"
