@@ -64,8 +64,10 @@ if [ ! -d "$DOTFILES_DIR" ]; then
     git clone "$REPO_URL" "$DOTFILES_DIR" &>/dev/null
     ok "Cloned to $DOTFILES_DIR"
 else
-    warn "Directory $DOTFILES_DIR already exists — skipping clone"
-    ok "Using existing repository"
+    info "Updating existing repository..."
+    git -C "$DOTFILES_DIR" pull --ff-only &>/dev/null \
+        && ok "Repository updated" \
+        || warn "Could not fast-forward — local changes may be present. Proceeding with current state."
 fi
 
 cd "$DOTFILES_DIR"
