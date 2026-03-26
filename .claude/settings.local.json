@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Skill(update-config)",
+      "Bash(ansible-lint --version)",
+      "Bash(python3 -m pip show ansible-lint)",
+      "Bash(python3 -m venv .venv)",
+      "Bash(.venv/bin/pip install:*)",
+      "Bash(.venv/bin/ansible-lint --version)",
+      "Bash(jq:*)"
+    ]
+  }
+}
