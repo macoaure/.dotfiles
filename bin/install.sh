@@ -27,7 +27,7 @@ fail()    { echo -e "  ${R}✗${NC} $1"; exit 1; }
 ask()     { echo -e "\n  ${C}?${NC} $1"; }
 
 # ── Header ────────────────────────────────────────────────────────────────────
-clear
+[[ -t 1 ]] && clear
 echo ""
 box "  macoaure/.dotfiles  "
 echo -e "  ${D}personal environment as infrastructure${NC}"
