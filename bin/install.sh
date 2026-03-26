@@ -78,7 +78,8 @@ step 4 5 "Role selection"
 ALL_ROLES=(base aur-helper zsh docker mise vscode cursor claude-code codex gemini rtk stow)
 
 ask "Installation mode:\n\n  ${W}[1]${NC} Full install (all roles)\n  ${W}[2]${NC} Custom (choose roles)\n"
-read -rp "  → " mode
+printf "  → " > /dev/tty
+read -r mode < /dev/tty
 
 SELECTED_TAGS=""
 
@@ -87,7 +88,8 @@ if [[ "$mode" == "2" ]]; then
     echo -e "  ${D}Space to toggle, Enter to confirm:${NC}\n"
     selected=()
     for role in "${ALL_ROLES[@]}"; do
-        read -rp "  Include ${W}${role}${NC}? [Y/n] " ans
+        printf "  Include ${W}${role}${NC}? [Y/n] " > /dev/tty
+        read -r ans < /dev/tty
         if [[ "$ans" != "n" && "$ans" != "N" ]]; then
             selected+=("$role")
         fi
@@ -103,9 +105,11 @@ step 5 5 "Running Ansible playbook"
 echo ""
 
 # Ask for sudo password upfront so ansible runs non-interactively in background
-echo -ne "  ${D}[sudo] become password: ${NC}"
-read -rs become_pass
-echo ""
+# Force read/write to /dev/tty — works even when stdin is a pipe (curl | bash)
+echo -ne "  ${D}[sudo] become password: ${NC}" > /dev/tty
+read -rs become_pass < /dev/tty
+echo "" > /dev/tty
+[[ -z "$become_pass" ]] && fail "Password cannot be empty."
 
 tag_args=()
 [[ -n "$SELECTED_TAGS" ]] && tag_args=(--tags "$SELECTED_TAGS")
@@ -174,7 +178,8 @@ echo ""
 echo -e "  ${Y}★${NC}  Found this useful? Star it on GitHub:"
 echo -e "  ${C}${REPO_WEB}${NC}"
 echo ""
-read -rp "  [Enter] open in browser  [s] skip: " star_choice
+printf "  [Enter] open in browser  [s] skip: " > /dev/tty
+read -r star_choice < /dev/tty
 
 if [[ "$star_choice" != "s" && "$star_choice" != "S" ]]; then
     if command -v xdg-open &>/dev/null; then
