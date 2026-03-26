@@ -31,6 +31,29 @@
     - commit-workflow.md
     - settings.json
 
+- name: Remove skill directories that must become symlinks
+  file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.claude/skills/{{ item }}"
+    state: absent
+  loop:
+    - adapt
+    - animate
+    - audit
+    - clarify
+    - colorize
+    - delight
+    - distill
+    - git-commit-planner
+    - gitmoji-commits
+    - mr-description
+    - normalize
+    - onboard
+    - polish
+    - quieter
+  when: >
+    (ansible_facts['env']['HOME'] + '/.claude/skills/' + item) is directory and
+    not (ansible_facts['env']['HOME'] + '/.claude/skills/' + item) is link
+
 - name: Symlink Claude skills
   file:
     src: "{{ (role_path + '/../../resources/claude/skills/' + item) | realpath }}"
