@@ -8,5 +8,17 @@ trust_level = "trusted"
 [projects."/home/vector/Documents/pjcont/projects/contar"]
 trust_level = "trusted"
 
+[projects."/home/vector/Documents/1doc-campaign-dispatcher"]
+trust_level = "trusted"
+
+[projects."/home/vector/Documents/1doc/develop.theio.me"]
+trust_level = "trusted"
+
+[projects."/home/vector/Documents/1doc/app.theio.me"]
+trust_level = "trusted"
+
 [notice.model_migrations]
 "gpt-5.3-codex" = "gpt-5.4"
+
+[plugins."github@openai-curated"]
+enabled = true
