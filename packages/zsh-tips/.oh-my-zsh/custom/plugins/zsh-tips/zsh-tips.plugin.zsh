@@ -61,7 +61,9 @@ _zsh_tips_show() {
   [[ "$ZSH_TIPS_ENABLED" == true ]] || return
   local idx=$(( RANDOM % ${#ZSH_TIPS[@]} + 1 ))
   local tip="${ZSH_TIPS[$idx]}"
-  zle -M $'\e[2;33m 💡  '"${tip}"$'\e[0m'
+  # Escape literal % signs so print -P doesn't treat them as prompt sequences
+  local safe="${tip:gs/%/%%}"
+  zle -M "$(print -Pn -- "%F{242} 💡  ${safe}%f")"
 }
 
 # Chain with any existing TRAPALRM so other plugins aren't broken
