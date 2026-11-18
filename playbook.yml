@@ -11,6 +11,9 @@
     - name: Packages
       ansible.builtin.import_tasks: tasks/packages.yml
 
+    - name: Fonts
+      ansible.builtin.import_tasks: tasks/fonts.yml
+
     - name: Shell
       ansible.builtin.import_tasks: tasks/shell.yml
 

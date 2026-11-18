@@ -1,0 +1,52 @@
+---
+- name: Check if running in WSL
+  ansible.builtin.shell:
+    cmd: grep -qi microsoft /proc/version && echo yes || echo no
+  register: wsl_check
+  changed_when: false
+
+- name: Get Windows username
+  when: wsl_check.stdout == "yes"
+  ansible.builtin.shell:
+    cmd: cmd.exe /c 'echo %USERNAME%' 2>/dev/null | tr -d '\r\n'
+  register: win_username
+  changed_when: false
+
+- name: Set Windows user fonts directory
+  when: wsl_check.stdout == "yes"
+  ansible.builtin.set_fact:
+    win_fonts_dir: "/mnt/c/Users/{{ win_username.stdout }}/AppData/Local/Microsoft/Windows/Fonts"
+
+- name: Check if JetBrains Mono Nerd Font is already installed on Windows
+  when: wsl_check.stdout == "yes"
+  ansible.builtin.find:
+    paths: "{{ win_fonts_dir }}"
+    patterns: "JetBrainsMonoNerdFont-Regular.ttf"
+  register: font_check
+
+- name: Download JetBrains Mono Nerd Font
+  when: wsl_check.stdout == "yes" and font_check.files | length == 0
+  ansible.builtin.get_url:
+    url: https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip
+    dest: /tmp/JetBrainsMono.zip
+    mode: "0644"
+
+- name: Extract JetBrains Mono Nerd Font
+  when: wsl_check.stdout == "yes" and font_check.files | length == 0
+  ansible.builtin.unarchive:
+    src: /tmp/JetBrainsMono.zip
+    dest: /tmp/
+    remote_src: true
+
+- name: Ensure Windows user fonts directory exists
+  when: wsl_check.stdout == "yes" and font_check.files | length == 0
+  ansible.builtin.file:
+    path: "{{ win_fonts_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy fonts to Windows user fonts directory
+  when: wsl_check.stdout == "yes" and font_check.files | length == 0
+  ansible.builtin.shell:
+    cmd: "find /tmp -maxdepth 1 -name 'JetBrainsMonoNerdFont*.ttf' -exec cp {} '{{ win_fonts_dir }}/' \\;"
+  changed_when: true
