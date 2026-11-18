@@ -73,14 +73,8 @@ _zsh_tips_show() {
   zle -M "$msg"
 }
 
-# Chain with any existing TRAPALRM so other plugins aren't broken
-if (( ${+functions[TRAPALRM]} )); then
-  _zsh_tips_prev_trapalrm=$functions[TRAPALRM]
-fi
-
 TRAPALRM() {
   _zsh_tips_show
-  [[ -n "${_zsh_tips_prev_trapalrm:-}" ]] && eval "$_zsh_tips_prev_trapalrm"
 }
 
 # Only shorten TMOUT if unset or already larger than our threshold
