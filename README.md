@@ -22,19 +22,18 @@ Personal dotfiles for WSL2 Arch Linux, managed with [GNU Stow](https://www.gnu.o
 ## Fresh setup
 
 ```sh
-git clone https://github.com/macoaure/.dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
-bash install.sh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/macoaure/.dotfiles/main/install.sh)"
 ```
 
 `install.sh` bootstraps with pacman (`base-devel`, `make`, `ansible`) then hands off to the Ansible playbook, which:
 
-1. Installs `zsh`, `git`, `stow`, `curl` via pacman
+1. Installs `zsh`, `git`, `stow`, `curl`, and PHP build dependencies via pacman
 2. Installs `yay` (AUR helper) if missing
 3. Installs `mise`, `gh` via yay
-4. Installs `pnpm` and `rustup`
-5. Installs oh-my-zsh + `zsh-syntax-highlighting` + `zsh-autosuggestions`
-6. Stows all packages into `$HOME`
+4. Installs oh-my-zsh + `zsh-syntax-highlighting` + `zsh-autosuggestions` + `powerlevel10k`
+5. Stows all packages into `$HOME`
+6. Runs `mise install` (node, php, rust, go, pnpm)
+7. Installs `gitmoji-cli` and `gitmoji-changelog` globally via pnpm
 
 ## Link only (tools already installed)
 
