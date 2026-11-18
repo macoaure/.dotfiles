@@ -10,6 +10,7 @@
     path: "{{ item }}"
     state: absent
   loop:
+    - "{{ home }}/.gitconfig"
     - "{{ home }}/.zshrc"
     - "{{ home }}/.p10k.zsh"
     - "{{ home }}/.config/htop/htoprc"
