@@ -1,8 +1,14 @@
-.PHONY: test install link
+.PHONY: test dev shell install link
 
 test:
-	docker build -t dotfiles-test .
+	docker build --target test -t dotfiles-test .
 	docker run --rm dotfiles-test
+
+dev:
+	docker build --target dev -t dotfiles-dev .
+
+shell: dev
+	docker run -it dotfiles-dev
 
 install:
 	bash install.sh

@@ -1,4 +1,4 @@
-FROM archlinux:latest
+FROM archlinux:latest AS base
 
 RUN pacman -Syu --noconfirm && \
     pacman -S --noconfirm \
@@ -20,4 +20,11 @@ WORKDIR /home/testuser/.dotfiles
 
 COPY --chown=testuser:testuser . .
 
+# --- test stage: run bats suite ---
+FROM base AS test
 ENTRYPOINT ["bats", "--recursive", "tests/"]
+
+# --- dev stage: fully bootstrapped shell for manual validation ---
+FROM base AS dev
+RUN bash install.sh
+ENTRYPOINT ["/bin/zsh", "-l"]
