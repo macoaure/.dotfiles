@@ -12,5 +12,9 @@ if ! command -v git > /dev/null 2>&1; then
   fi
 fi
 
-git clone "$REPO" "$DOTFILES_DIR"
+if [ -d "$DOTFILES_DIR/.git" ]; then
+  git -C "$DOTFILES_DIR" pull
+else
+  git clone "$REPO" "$DOTFILES_DIR"
+fi
 bash "$DOTFILES_DIR/install.sh"
