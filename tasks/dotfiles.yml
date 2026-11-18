@@ -5,20 +5,6 @@
     state: directory
     mode: "0755"
 
-- name: Remove files that conflict with stow symlinks
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: absent
-  loop:
-    - "{{ home }}/.gitconfig"
-    - "{{ home }}/.zshrc"
-    - "{{ home }}/.p10k.zsh"
-    - "{{ home }}/.config/htop/htoprc"
-    - "{{ home }}/.config/rtk/config.toml"
-    - "{{ home }}/.config/rtk/filters.toml"
-    - "{{ home }}/.config/ccstatusline/settings.json"
-    - "{{ home }}/.config/mise/config.toml"
-
 - name: Find stow packages
   ansible.builtin.find:
     paths: "{{ dotfiles_dir }}/packages"
@@ -26,10 +12,16 @@
     depth: 1
   register: stow_packages
 
-- name: Stow all packages
+- name: Stow all packages (adopt existing files)
   ansible.builtin.command:
-    cmd: "stow --dir={{ dotfiles_dir }}/packages --target={{ home }} {{ item.path | basename }}"
+    cmd: "stow --adopt --dir={{ dotfiles_dir }}/packages --target={{ home }} {{ item.path | basename }}"
   loop: "{{ stow_packages.files }}"
+  changed_when: false
+
+- name: Restore dotfiles to repo versions after adopt
+  ansible.builtin.command:
+    cmd: git checkout -- .
+    chdir: "{{ dotfiles_dir }}"
   changed_when: false
 
 - name: Install mise tools
