@@ -6,9 +6,9 @@ REPO="https://github.com/macoaure/.dotfiles.git"
 
 if ! command -v git > /dev/null 2>&1; then
   if [ "$(id -u)" -eq 0 ]; then
-    pacman -S --needed --noconfirm git
+    pacman -Sy --needed --noconfirm git
   else
-    sudo pacman -S --needed --noconfirm git
+    sudo pacman -Sy --needed --noconfirm git
   fi
 fi
 
