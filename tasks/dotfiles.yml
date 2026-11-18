@@ -5,10 +5,18 @@
     state: directory
     mode: "0755"
 
-- name: Remove oh-my-zsh generated .zshrc
+- name: Remove files that conflict with stow symlinks
   ansible.builtin.file:
-    path: "{{ home }}/.zshrc"
+    path: "{{ item }}"
     state: absent
+  loop:
+    - "{{ home }}/.zshrc"
+    - "{{ home }}/.p10k.zsh"
+    - "{{ home }}/.config/htop/htoprc"
+    - "{{ home }}/.config/rtk/config.toml"
+    - "{{ home }}/.config/rtk/filters.toml"
+    - "{{ home }}/.config/ccstatusline/settings.json"
+    - "{{ home }}/.config/mise/config.toml"
 
 - name: Find stow packages
   ansible.builtin.find:
@@ -21,4 +29,19 @@
   ansible.builtin.command:
     cmd: "stow --dir={{ dotfiles_dir }}/packages --target={{ home }} {{ item.path | basename }}"
   loop: "{{ stow_packages.files }}"
+  changed_when: false
+
+- name: Install mise tools
+  ansible.builtin.shell:
+    cmd: mise install
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: false
+
+- name: Install global pnpm packages
+  ansible.builtin.shell:
+    cmd: mise exec -- pnpm add -g gitmoji-cli gitmoji-changelog
+  environment:
+    PATH: "{{ home }}/.local/share/pnpm/bin:{{ home }}/.local/share/mise/shims:{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+    PNPM_HOME: "{{ home }}/.local/share/pnpm"
   changed_when: false
