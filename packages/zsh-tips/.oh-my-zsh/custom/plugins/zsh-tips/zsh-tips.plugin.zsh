@@ -18,7 +18,7 @@ typeset -ga ZSH_TIPS=(
   "Ctrl+W          — delete the word immediately before the cursor"
   "Ctrl+A / Ctrl+E — jump to the start / end of the line"
   "Alt+B / Alt+F   — jump one word backward / forward"
-  "Ctrl+X Ctrl+E   — open the current command in \$EDITOR to finish writing it"
+  "Ctrl+X Ctrl+E   — open the current command in your editor to finish writing it"
 
   # History tricks
   "!!              — repeat the last command exactly as typed"
@@ -26,14 +26,14 @@ typeset -ga ZSH_TIPS=(
   "Alt+.           — insert the last argument of the previous command"
   "^old^new        — rerun the last command replacing 'old' with 'new'"
   "!pattern        — run the most recent command that starts with 'pattern'"
-  "fc              — open the last command in \$EDITOR and re-run it on save"
+  "fc              — open the last command in your editor and re-run it on save"
 
   # Job control
   "Ctrl+Z          — suspend the foreground process"
   "fg              — bring the last suspended job back to the foreground"
   "bg              — resume the last suspended job in the background"
   "jobs            — list all suspended and background jobs"
-  "disown %1       — detach job 1 from the shell so it survives logout"
+  "disown %%1      — detach job 1 from the shell so it survives logout"
 
   # Redirection & pipes
   "command 2>&1    — merge stderr into stdout"
@@ -56,26 +56,32 @@ typeset -ga ZSH_TIPS=(
   "In zsh: setopt NO_CASE_GLOB — make glob matching case-insensitive"
 
   # Useful shortcuts
-  "echo \${VAR:-default}   — print 'default' if VAR is unset or empty"
-  "time command            — measure how long a command takes to run"
-  "watch -n2 command       — re-run a command every 2 seconds"
-  "Ctrl+C then !!          — cancel the current command and immediately retry it"
+  "echo value      — use :- to provide a fallback when a variable is unset"
+  "time command    — measure how long a command takes to run"
+  "watch -n2 cmd   — re-run a command every 2 seconds and show the output"
+  "Ctrl+C then !!  — cancel the current command and immediately retry it"
 )
 
+# Show tip in RPROMPT: no print, no newline, no new prompt line.
+# zle reset-prompt only redraws the current line in place.
+# precmd hook restores the original RPROMPT after the next command runs.
 _zsh_tips_show() {
   [[ "$ZSH_TIPS_ENABLED" == true ]] || return
   local idx=$(( RANDOM % ${#ZSH_TIPS[@]} + 1 ))
   local tip="${ZSH_TIPS[$idx]}"
-  # Escape literal % signs so print -P doesn't treat them as prompt sequences
-  local safe="${tip:gs/%/%%}"
-  local msg
-  print -Pv msg -- "%F{242} 💡  ${safe}%f"
-  # zle -I signals ZLE that we're printing to the terminal directly;
-  # it redraws cleanly on the next keystroke. zle -M is avoided because
-  # it treats its string as literal text and does not render ANSI codes.
-  zle -I
-  print -- "$msg"
+  local display="${tip:gs/%/%%}"
+  typeset -g _ZSH_TIPS_RPROMPT_ORIG="${RPROMPT}"
+  RPROMPT="%F{242} 💡 ${display}%f"
+  zle reset-prompt
 }
+
+_zsh_tips_precmd() {
+  [[ -v _ZSH_TIPS_RPROMPT_ORIG ]] || return
+  RPROMPT="${_ZSH_TIPS_RPROMPT_ORIG}"
+  unset _ZSH_TIPS_RPROMPT_ORIG
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _zsh_tips_precmd
 
 TRAPALRM() {
   _zsh_tips_show
