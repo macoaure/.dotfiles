@@ -70,7 +70,11 @@ _zsh_tips_show() {
   local safe="${tip:gs/%/%%}"
   local msg
   print -Pv msg -- "%F{242} 💡  ${safe}%f"
-  zle -M "$msg"
+  # zle -I signals ZLE that we're printing to the terminal directly;
+  # it redraws cleanly on the next keystroke. zle -M is avoided because
+  # it treats its string as literal text and does not render ANSI codes.
+  zle -I
+  print -- "$msg"
 }
 
 TRAPALRM() {
