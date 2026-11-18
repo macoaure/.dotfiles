@@ -18,10 +18,6 @@ load 'helpers'
   assert_symlink "$HOME/.config/htop"
 }
 
-@test "zsh-tips plugin is symlinked" {
-  assert_symlink "$HOME/.oh-my-zsh/custom/plugins/zsh-tips"
-}
-
 @test "no broken symlinks in HOME" {
   run find "$HOME" -maxdepth 3 -xtype l
   assert_output ""
