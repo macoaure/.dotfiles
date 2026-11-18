@@ -1,0 +1,23 @@
+---
+- name: Check if oh-my-zsh is installed
+  ansible.builtin.stat:
+    path: "{{ home }}/.oh-my-zsh"
+  register: omz_dir
+
+- name: Install oh-my-zsh
+  when: not omz_dir.stat.exists
+  ansible.builtin.shell:
+    cmd: RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  changed_when: true
+
+- name: Install zsh-syntax-highlighting
+  ansible.builtin.git:
+    repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
+    dest: "{{ home }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+    depth: 1
+
+- name: Install zsh-autosuggestions
+  ansible.builtin.git:
+    repo: https://github.com/zsh-users/zsh-autosuggestions.git
+    dest: "{{ home }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+    depth: 1

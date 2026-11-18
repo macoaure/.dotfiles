@@ -27,14 +27,14 @@ cd ~/.dotfiles
 bash install.sh
 ```
 
-`install.sh` will:
+`install.sh` bootstraps with pacman (`base-devel`, `make`, `ansible`) then hands off to the Ansible playbook, which:
 
-1. Install `zsh`, `git`, `stow` via pacman
-2. Install `yay` (AUR helper) if missing
-3. Install `mise`, `gh` via yay
-4. Install `pnpm` and `rustup`
-5. Install oh-my-zsh + `zsh-syntax-highlighting` + `zsh-autosuggestions`
-6. Stow all packages into `$HOME`
+1. Installs `zsh`, `git`, `stow`, `curl` via pacman
+2. Installs `yay` (AUR helper) if missing
+3. Installs `mise`, `gh` via yay
+4. Installs `pnpm` and `rustup`
+5. Installs oh-my-zsh + `zsh-syntax-highlighting` + `zsh-autosuggestions`
+6. Stows all packages into `$HOME`
 
 ## Link only (tools already installed)
 

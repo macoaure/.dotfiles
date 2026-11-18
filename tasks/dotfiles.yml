@@ -1,0 +1,24 @@
+---
+- name: Ensure ~/.config exists (prevent stow tree-folding)
+  ansible.builtin.file:
+    path: "{{ home }}/.config"
+    state: directory
+    mode: "0755"
+
+- name: Remove oh-my-zsh generated .zshrc
+  ansible.builtin.file:
+    path: "{{ home }}/.zshrc"
+    state: absent
+
+- name: Find stow packages
+  ansible.builtin.find:
+    paths: "{{ dotfiles_dir }}/packages"
+    file_type: directory
+    depth: 1
+  register: stow_packages
+
+- name: Stow all packages
+  ansible.builtin.command:
+    cmd: "stow --dir={{ dotfiles_dir }}/packages --target={{ home }} {{ item.path | basename }}"
+  loop: "{{ stow_packages.files }}"
+  changed_when: false

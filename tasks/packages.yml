@@ -1,0 +1,30 @@
+---
+- name: Install pacman packages
+  become: true
+  ansible.builtin.command:
+    cmd: pacman -S --needed --noconfirm base-devel make zsh git stow curl sudo
+  changed_when: false
+
+- name: Check if yay is installed
+  ansible.builtin.stat:
+    path: /usr/bin/yay
+  register: yay_bin
+
+- name: Clone yay-bin
+  when: not yay_bin.stat.exists
+  ansible.builtin.git:
+    repo: https://aur.archlinux.org/yay-bin.git
+    dest: /tmp/yay-bin
+    depth: 1
+
+- name: Build and install yay
+  when: not yay_bin.stat.exists
+  ansible.builtin.shell:
+    cmd: makepkg -si --noconfirm
+    chdir: /tmp/yay-bin
+  changed_when: true
+
+- name: Install AUR packages via yay
+  ansible.builtin.command:
+    cmd: yay -S --needed --noconfirm mise-bin github-cli
+  changed_when: false

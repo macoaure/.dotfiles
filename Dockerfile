@@ -2,7 +2,7 @@ FROM archlinux:latest
 
 RUN pacman -Syu --noconfirm && \
     pacman -S --noconfirm \
-      zsh git stow curl base-devel sudo \
+      base-devel make zsh git stow curl sudo ansible \
       bash && \
     pacman -Scc --noconfirm
 

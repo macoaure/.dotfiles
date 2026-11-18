@@ -1,0 +1,22 @@
+---
+- name: Check if pnpm is installed
+  ansible.builtin.stat:
+    path: "{{ home }}/.local/share/pnpm/bin/pnpm"
+  register: pnpm_bin
+
+- name: Install pnpm
+  when: not pnpm_bin.stat.exists
+  ansible.builtin.shell:
+    cmd: curl -fsSL https://get.pnpm.io/install.sh | sh -
+  changed_when: true
+
+- name: Check if rustup is installed
+  ansible.builtin.stat:
+    path: "{{ home }}/.cargo/bin/rustup"
+  register: rustup_bin
+
+- name: Install rustup
+  when: not rustup_bin.stat.exists
+  ansible.builtin.shell:
+    cmd: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+  changed_when: true

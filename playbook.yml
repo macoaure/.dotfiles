@@ -1,0 +1,21 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars:
+    home: "{{ ansible_env.HOME }}"
+    dotfiles_dir: "{{ playbook_dir }}"
+
+  tasks:
+    - name: Packages
+      ansible.builtin.import_tasks: tasks/packages.yml
+
+    - name: Tools
+      ansible.builtin.import_tasks: tasks/tools.yml
+
+    - name: Shell
+      ansible.builtin.import_tasks: tasks/shell.yml
+
+    - name: Dotfiles
+      ansible.builtin.import_tasks: tasks/dotfiles.yml
