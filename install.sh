@@ -3,6 +3,10 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-sudo pacman -S --needed --noconfirm base-devel make ansible
+if [[ $EUID -eq 0 ]]; then
+  pacman -S --needed --noconfirm base-devel make ansible
+else
+  sudo pacman -S --needed --noconfirm base-devel make ansible
+fi
 
 ansible-playbook "$DOTFILES_DIR/playbook.yml"

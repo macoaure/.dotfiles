@@ -22,7 +22,7 @@ Personal dotfiles for WSL2 Arch Linux, managed with [GNU Stow](https://www.gnu.o
 ## Fresh setup
 
 ```sh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/macoaure/.dotfiles/main/install.sh)"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/macoaure/.dotfiles/main/bootstrap.sh)"
 ```
 
 `install.sh` bootstraps with pacman (`base-devel`, `make`, `ansible`) then hands off to the Ansible playbook, which:
