@@ -2,6 +2,11 @@
 # Configurable: ZSH_TIPS_TIMEOUT (seconds, default 20)
 #               ZSH_TIPS_ENABLED (true/false, default true)
 
+# Guard: only initialise once per shell session so re-sourcing .zshrc
+# does not rebuild the TRAPALRM chain and cause recursion.
+(( ${+_ZSH_TIPS_LOADED} )) && return 0
+typeset -g _ZSH_TIPS_LOADED=1
+
 typeset -g  ZSH_TIPS_TIMEOUT=${ZSH_TIPS_TIMEOUT:-20}
 typeset -g  ZSH_TIPS_ENABLED=${ZSH_TIPS_ENABLED:-true}
 
