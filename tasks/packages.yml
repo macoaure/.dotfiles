@@ -5,6 +5,14 @@
     cmd: pacman -S --needed --noconfirm base-devel make zsh git stow curl sudo re2c oniguruma libpng freetype2 libjpeg-turbo libwebp libzip libsodium sqlite openssl zlib bzip2
   changed_when: false
 
+- name: Allow wheel group to run pacman without password
+  become: true
+  ansible.builtin.copy:
+    content: "%wheel ALL=(ALL) NOPASSWD: /usr/bin/pacman\n"
+    dest: /etc/sudoers.d/10-wheel-pacman
+    mode: "0440"
+    validate: visudo -cf %s
+
 - name: Check if yay is installed
   ansible.builtin.stat:
     path: /usr/bin/yay
