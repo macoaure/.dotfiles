@@ -177,7 +177,7 @@ print(f'{sym} {temp}°C')
 function prompt_my_weather() {
   zmodload zsh/datetime 2>/dev/null
   if [[ ! -f "$_WEATHER_CACHE" ]] ||
-     (( EPOCHSECONDS - $(stat -c %Y "$_WEATHER_CACHE" 2>/dev/null || echo 0) > 3600 )); then
+     (( EPOCHSECONDS - $(stat -c %Y "$_WEATHER_CACHE" 2>/dev/null || echo 0) > 14400 )); then
     _weather_refresh_cache &!
   fi
   [[ -f "$_WEATHER_CACHE" ]] || return
