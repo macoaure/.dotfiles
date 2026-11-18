@@ -12,7 +12,7 @@ if ! command -v git > /dev/null 2>&1; then
   fi
 fi
 
-if [ -d "$DOTFILES_DIR/.git" ]; then
+if [ -d "$DOTFILES_DIR" ]; then
   git -C "$DOTFILES_DIR" pull
 else
   git clone "$REPO" "$DOTFILES_DIR"
