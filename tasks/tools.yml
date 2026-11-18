@@ -1,2 +1,166 @@
 ---
+# RTK — Rust Token Killer (output trimmer for AI agents)
+- name: Check if rtk is installed
+  ansible.builtin.stat:
+    path: "{{ home }}/.local/bin/rtk"
+  register: rtk_bin
 
+- name: Install rtk
+  when: not rtk_bin.stat.exists
+  ansible.builtin.shell:
+    cmd: curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/main/install.sh | bash
+  changed_when: true
+
+- name: Run rtk init --global (Claude Code hook)
+  ansible.builtin.shell:
+    cmd: rtk init --global
+    creates: "{{ home }}/.config/rtk/config.toml"
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+
+- name: Run rtk init --global --agent cursor
+  ansible.builtin.shell:
+    cmd: rtk init --global --agent cursor
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: false
+
+# Claude Code
+- name: Check if claude is installed
+  ansible.builtin.stat:
+    path: "{{ home }}/.local/bin/claude"
+  register: claude_bin
+
+- name: Install Claude Code
+  when: not claude_bin.stat.exists
+  ansible.builtin.shell:
+    cmd: curl -fsSL https://claude.ai/install.sh | bash
+  changed_when: true
+
+# Cursor CLI (cursor + cursor-agent + agent)
+- name: Check if cursor CLI is installed
+  ansible.builtin.stat:
+    path: "{{ home }}/.local/bin/cursor"
+  register: cursor_cli_bin
+
+- name: Install Cursor CLI
+  when: not cursor_cli_bin.stat.exists
+  ansible.builtin.shell:
+    cmd: curl https://cursor.com/install -fsS | bash
+  changed_when: true
+
+# Codex
+- name: Check if codex is installed
+  ansible.builtin.stat:
+    path: "{{ home }}/.local/bin/codex"
+  register: codex_bin
+
+- name: Install Codex
+  when: not codex_bin.stat.exists
+  ansible.builtin.shell:
+    cmd: curl -fsSL https://chatgpt.com/codex/install.sh | sh
+  changed_when: true
+
+# TokenEconomizer — cost-reduction plugin (micro-skills, tool pruning, loop guard)
+- name: Clone TokenEconomizer
+  ansible.builtin.git:
+    repo: https://github.com/microsoft/TokenEconomizer.git
+    dest: "{{ home }}/.local/share/TokenEconomizer"
+    depth: 1
+    update: true
+
+# Claude Code plugins
+- name: Check if ponytail is installed in Claude Code
+  ansible.builtin.stat:
+    path: "{{ home }}/.claude/plugins/cache/ponytail"
+  register: claude_ponytail
+
+- name: Install ponytail marketplace in Claude Code
+  when: not claude_ponytail.stat.exists
+  ansible.builtin.shell:
+    cmd: claude plugin marketplace add DietrichGebert/ponytail
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: true
+
+- name: Install ponytail plugin in Claude Code
+  when: not claude_ponytail.stat.exists
+  ansible.builtin.shell:
+    cmd: claude plugin install ponytail@ponytail
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: true
+
+- name: Check if tokeneconomizer is installed in Claude Code
+  ansible.builtin.stat:
+    path: "{{ home }}/.claude/plugins/cache/tokeneconomizer"
+  register: claude_tokeneconomizer
+
+- name: Install tokeneconomizer in Claude Code
+  when: not claude_tokeneconomizer.stat.exists
+  ansible.builtin.shell:
+    cmd: |
+      claude plugin marketplace add "{{ home }}/.local/share/TokenEconomizer"
+      claude plugin install tokeneconomizer@tokeneconomizer
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: true
+
+- name: Check if job-hunt-skills is installed in Claude Code
+  ansible.builtin.stat:
+    path: "{{ home }}/.claude/plugins/cache/remotivated"
+  register: claude_jobhunt
+
+- name: Install job-hunt-skills in Claude Code
+  when: not claude_jobhunt.stat.exists
+  ansible.builtin.shell:
+    cmd: |
+      claude plugin marketplace add Remotivated/job-hunt-skills
+      claude plugin install job-hunt-skills@remotivated
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: true
+
+- name: Check if rust-analyzer-lsp is installed in Claude Code
+  ansible.builtin.stat:
+    path: "{{ home }}/.claude/plugins/cache/claude-plugins-official"
+  register: claude_rustanalyzer
+
+- name: Install rust-analyzer-lsp in Claude Code
+  when: not claude_rustanalyzer.stat.exists
+  ansible.builtin.shell:
+    cmd: claude plugin install rust-analyzer-lsp@claude-plugins-official
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: true
+
+# Codex plugins
+- name: Check if ponytail is installed in Codex
+  ansible.builtin.stat:
+    path: "{{ home }}/.codex/plugins/ponytail"
+  register: codex_ponytail
+
+- name: Install ponytail in Codex
+  when: not codex_ponytail.stat.exists
+  ansible.builtin.shell:
+    cmd: |
+      codex plugin marketplace add DietrichGebert/ponytail
+      codex plugin add ponytail@ponytail
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: true
+
+- name: Check if tokeneconomizer is installed in Codex
+  ansible.builtin.stat:
+    path: "{{ home }}/.codex/plugins/tokeneconomizer"
+  register: codex_tokeneconomizer
+
+- name: Install tokeneconomizer in Codex
+  when: not codex_tokeneconomizer.stat.exists
+  ansible.builtin.shell:
+    cmd: |
+      codex plugin marketplace add "{{ home }}/.local/share/TokenEconomizer"
+      codex plugin add tokeneconomizer@tokeneconomizer
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: true

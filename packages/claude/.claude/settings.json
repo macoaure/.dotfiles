@@ -1,0 +1,60 @@
+{
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "model": "claude-sonnet-4-6",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rtk hook claude"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "ccstatusline",
+    "padding": 0,
+    "refreshInterval": 10
+  },
+  "enabledPlugins": {
+    "cc-plugin-you-should-know@builtin": true,
+    "job-hunt-skills@remotivated": true,
+    "tokeneconomizer@tokeneconomizer": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "ponytail@ponytail": true
+  },
+  "extraKnownMarketplaces": {
+    "remotivated": {
+      "source": {
+        "source": "github",
+        "repo": "Remotivated/job-hunt-skills"
+      }
+    },
+    "tokeneconomizer": {
+      "source": {
+        "source": "directory",
+        "path": "/home/romanova/.local/share/TokenEconomizer"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    }
+  },
+  "modelSettings": {
+    "claude-sonnet-5": {
+      "effortLevel": "medium"
+    }
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "auto"
+}

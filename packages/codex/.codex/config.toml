@@ -1,0 +1,20 @@
+model = "gpt-5.6-luna"
+model_reasoning_effort = "medium"
+commit_attribution = ""
+
+[tui]
+screen_reader_detection_done = true
+
+[marketplaces.tokeneconomizer]
+source_type = "local"
+source = "/home/romanova/.local/share/TokenEconomizer"
+
+[marketplaces.ponytail]
+source_type = "git"
+source = "https://github.com/DietrichGebert/ponytail.git"
+
+[plugins."tokeneconomizer@tokeneconomizer"]
+enabled = true
+
+[plugins."ponytail@ponytail"]
+enabled = true
