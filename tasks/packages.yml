@@ -2,37 +2,71 @@
 - name: Install pacman packages
   become: true
   ansible.builtin.command:
-    cmd: pacman -S --needed --noconfirm base-devel make zsh git stow curl sudo re2c oniguruma libpng freetype2 libjpeg-turbo libwebp libzip libsodium sqlite openssl zlib bzip2
+    cmd: pacman -S --needed --noconfirm base-devel make zsh git stow curl sudo re2c oniguruma libpng freetype2 libjpeg-turbo libwebp libzip libsodium sqlite openssl zlib bzip2 github-cli
   changed_when: false
-
-- name: Allow wheel group to run pacman without password
-  become: true
-  ansible.builtin.copy:
-    content: "%wheel ALL=(ALL) NOPASSWD: /usr/bin/pacman\n"
-    dest: /etc/sudoers.d/10-wheel-pacman
-    mode: "0440"
-    validate: visudo -cf %s
 
 - name: Check if yay is installed
   ansible.builtin.stat:
     path: /usr/bin/yay
   register: yay_bin
 
-- name: Clone yay-bin
+- name: Clone yay-bin PKGBUILD
   when: not yay_bin.stat.exists
   ansible.builtin.git:
     repo: https://aur.archlinux.org/yay-bin.git
     dest: /tmp/yay-bin
     depth: 1
 
-- name: Build and install yay
+- name: Build yay-bin package
   when: not yay_bin.stat.exists
-  ansible.builtin.shell:
-    cmd: makepkg -si --noconfirm
+  ansible.builtin.command:
+    cmd: makepkg --noconfirm --noprogressbar
     chdir: /tmp/yay-bin
   changed_when: true
 
-- name: Install AUR packages via yay
+- name: Find built yay-bin package
+  when: not yay_bin.stat.exists
+  ansible.builtin.find:
+    paths: /tmp/yay-bin
+    patterns: "*.pkg.tar.*"
+  register: yay_packages
+
+- name: Install yay-bin package
+  when: not yay_bin.stat.exists and yay_packages.files | length > 0
+  become: true
   ansible.builtin.command:
-    cmd: yay -S --needed --noconfirm mise-bin github-cli
-  changed_when: false
+    cmd: "pacman -U --noconfirm {{ yay_packages.files[0].path }}"
+  changed_when: true
+
+- name: Check if mise is installed
+  ansible.builtin.stat:
+    path: /usr/bin/mise
+  register: mise_bin
+
+- name: Clone mise-bin PKGBUILD
+  when: not mise_bin.stat.exists
+  ansible.builtin.git:
+    repo: https://aur.archlinux.org/mise-bin.git
+    dest: /tmp/mise-bin
+    depth: 1
+
+- name: Build mise-bin package
+  when: not mise_bin.stat.exists
+  ansible.builtin.command:
+    cmd: makepkg --noconfirm --noprogressbar
+    chdir: /tmp/mise-bin
+  changed_when: true
+
+- name: Find built mise-bin package
+  when: not mise_bin.stat.exists
+  ansible.builtin.find:
+    paths: /tmp/mise-bin
+    patterns: "*.pkg.tar.*"
+  register: mise_packages
+
+- name: Install mise-bin package
+  when: not mise_bin.stat.exists and mise_packages.files | length > 0
+  become: true
+  ansible.builtin.command:
+    cmd: "pacman -U --noconfirm {{ mise_packages.files[0].path }}"
+  changed_when: true
