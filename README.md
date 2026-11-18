@@ -10,14 +10,10 @@ Personal dotfiles for WSL2 Arch Linux, managed with [GNU Stow](https://www.gnu.o
 ├── Makefile         # make test | make install | make link
 ├── Dockerfile       # Arch Linux + bats test environment
 ├── packages/        # Stow packages (each mirrors $HOME layout)
-│   ├── astro/
 │   ├── ccstatusline/
-│   ├── composer/
-│   ├── gh/
 │   ├── git/
 │   ├── htop/
 │   ├── mise/
-│   ├── qmd/
 │   ├── rtk/
 │   └── zsh/
 └── tests/           # bats-core test suite
@@ -60,9 +56,3 @@ Runs the full bats suite inside a clean Arch Linux container:
 - `shell.bats` — `zsh` sources `.zshrc` cleanly
 - `tools.bats` — all expected tools are on `$PATH`
 
-## Secrets
-
-The following files are gitignored and must be created manually after cloning:
-
-- `~/.config/gh/hosts.yml` — created automatically by `gh auth login`
-- `~/.config/composer/auth.json` — created automatically by `composer config --global http-basic ...`

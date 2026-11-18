@@ -22,10 +22,6 @@ setup_file() {
   assert_symlink "$HOME/.config/mise/config.toml"
 }
 
-@test "gh config.yml is symlinked" {
-  assert_symlink "$HOME/.config/gh/config.yml"
-}
-
 @test "htoprc is symlinked" {
   assert_symlink "$HOME/.config/htop/htoprc"
 }

@@ -1,3 +1,0 @@
-# Secrets - never commit
-packages/gh/.config/gh/hosts.yml
-packages/composer/.config/composer/auth.json
