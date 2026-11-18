@@ -166,14 +166,6 @@ elif code in (179, 182, 227, 230, 323, 326,
               329, 332, 335, 338, 350, 371):    sym = '❄'
 else:                                           sym = '🌧'
 
-# 8-point sparkline from today's hourly forecast (every 3 h: 0–21)
-hourly = data['weather'][0]['hourly']
-temps  = [int(h.get('tempC', 0)) for h in hourly]
-blocks = '▁▂▃▄▅▆▇█'
-mn, mx = min(temps), max(temps)
-rng    = mx - mn or 1
-spark  = ''.join(blocks[round((t - mn) / rng * 7)] for t in temps)
-
 print(f'{sym} {temp}°C')
 " 2>/dev/null) || return
 
