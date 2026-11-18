@@ -13,8 +13,15 @@ source = "/home/romanova/.local/share/TokenEconomizer"
 source_type = "git"
 source = "https://github.com/DietrichGebert/ponytail.git"
 
+[marketplaces.mattpocock]
+source_type = "git"
+source = "https://github.com/mattpocock/skills.git"
+
 [plugins."tokeneconomizer@tokeneconomizer"]
 enabled = true
 
 [plugins."ponytail@ponytail"]
+enabled = true
+
+[plugins."mattpocock-skills@mattpocock"]
 enabled = true

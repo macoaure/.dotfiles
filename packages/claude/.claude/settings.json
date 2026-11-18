@@ -28,7 +28,8 @@
     "job-hunt-skills@remotivated": true,
     "tokeneconomizer@tokeneconomizer": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "mattpocock-skills@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "remotivated": {

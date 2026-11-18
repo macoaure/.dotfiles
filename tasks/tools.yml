@@ -134,6 +134,19 @@
     PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
   changed_when: true
 
+- name: Check if mattpocock-skills is installed in Claude Code
+  ansible.builtin.stat:
+    path: "{{ home }}/.claude/plugins/cache/claude-plugins-official/mattpocock-skills"
+  register: claude_mattpocock
+
+- name: Install mattpocock-skills in Claude Code
+  when: not claude_mattpocock.stat.exists
+  ansible.builtin.shell:
+    cmd: claude plugin install mattpocock-skills@claude-plugins-official
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: true
+
 # Codex plugins
 - name: Check if ponytail is installed in Codex
   ansible.builtin.stat:
@@ -161,6 +174,35 @@
     cmd: |
       codex plugin marketplace add "{{ home }}/.local/share/TokenEconomizer"
       codex plugin add tokeneconomizer@tokeneconomizer
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: true
+
+- name: Check if mattpocock-skills is installed in Codex
+  ansible.builtin.stat:
+    path: "{{ home }}/.codex/plugins/mattpocock"
+  register: codex_mattpocock
+
+- name: Install mattpocock-skills in Codex
+  when: not codex_mattpocock.stat.exists
+  ansible.builtin.shell:
+    cmd: |
+      codex plugin marketplace add mattpocock/skills
+      codex plugin add mattpocock-skills@mattpocock
+  environment:
+    PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
+  changed_when: true
+
+# Cursor skills (npx route — no plugin system for cursor)
+- name: Check if mattpocock-skills is installed for Cursor
+  ansible.builtin.stat:
+    path: "{{ home }}/.cursor/skills/setup-matt-pocock-skills"
+  register: cursor_mattpocock
+
+- name: Install mattpocock-skills for Cursor
+  when: not cursor_mattpocock.stat.exists
+  ansible.builtin.shell:
+    cmd: npx skills@latest add mattpocock/skills -a cursor
   environment:
     PATH: "{{ home }}/.local/bin:/usr/local/bin:/usr/bin:/bin"
   changed_when: true
