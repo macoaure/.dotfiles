@@ -2,7 +2,7 @@
 - name: Install pacman packages
   become: true
   ansible.builtin.command:
-    cmd: pacman -S --needed --noconfirm base-devel make zsh git stow curl sudo re2c oniguruma libpng freetype2 libjpeg-turbo libwebp libzip libsodium sqlite openssl zlib bzip2 github-cli ttf-jetbrains-mono-nerd
+    cmd: pacman -S --needed --noconfirm base-devel make zsh git stow curl sudo re2c oniguruma libpng freetype2 libjpeg-turbo libwebp libzip libsodium sqlite openssl zlib bzip2 github-cli ttf-jetbrains-mono-nerd docker docker-compose
   changed_when: false
 
 - name: Check if yay is installed

@@ -1,0 +1,41 @@
+---
+- name: Check if running in WSL
+  ansible.builtin.shell:
+    cmd: grep -qi microsoft /proc/version && echo yes || echo no
+  register: docker_wsl_check
+  changed_when: false
+
+- name: Enable systemd in WSL
+  when: docker_wsl_check.stdout == "yes"
+  become: true
+  ansible.builtin.blockinfile:
+    path: /etc/wsl.conf
+    create: true
+    mode: "0644"
+    block: |
+      [boot]
+      systemd=true
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - systemd"
+
+- name: Add user to docker group
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    groups: docker
+    append: true
+
+- name: Enable docker service
+  become: true
+  ansible.builtin.systemd:
+    name: docker.service
+    enabled: true
+    state: started
+  failed_when: false
+
+- name: Enable containerd service
+  become: true
+  ansible.builtin.systemd:
+    name: containerd.service
+    enabled: true
+    state: started
+  failed_when: false

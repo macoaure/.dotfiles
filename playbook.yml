@@ -11,6 +11,9 @@
     - name: Packages
       ansible.builtin.import_tasks: tasks/packages.yml
 
+    - name: Docker
+      ansible.builtin.import_tasks: tasks/docker.yml
+
     - name: Fonts
       ansible.builtin.import_tasks: tasks/fonts.yml
 
