@@ -1,0 +1,50 @@
+---
+- name: Check if running in WSL
+  ansible.builtin.shell:
+    cmd: grep -qi microsoft /proc/version && echo yes || echo no
+  register: vscode_wsl_check
+  changed_when: false
+
+- name: Get Windows username for VS Code
+  when: vscode_wsl_check.stdout == "yes"
+  ansible.builtin.shell:
+    cmd: cmd.exe /c 'echo %USERNAME%' 2>/dev/null | tr -d '\r\n'
+  register: vscode_win_username
+  changed_when: false
+
+- name: Set VS Code settings path
+  when: vscode_wsl_check.stdout == "yes"
+  ansible.builtin.set_fact:
+    vscode_settings_file: "/mnt/c/Users/{{ vscode_win_username.stdout }}/AppData/Roaming/Code/User/settings.json"
+
+- name: Ensure VS Code User settings directory exists
+  when: vscode_wsl_check.stdout == "yes"
+  ansible.builtin.file:
+    path: "{{ vscode_settings_file | dirname }}"
+    state: directory
+    mode: "0755"
+
+- name: Update VS Code font settings
+  when: vscode_wsl_check.stdout == "yes"
+  ansible.builtin.shell:
+    cmd: |
+      python3 - <<'EOF'
+      import json, os
+
+      path = "{{ vscode_settings_file }}"
+      settings = {}
+      if os.path.exists(path):
+          with open(path) as f:
+              try:
+                  settings = json.load(f)
+              except json.JSONDecodeError:
+                  pass
+
+      settings["editor.fontFamily"] = "'JetBrainsMono Nerd Font', monospace"
+      settings["terminal.integrated.fontFamily"] = "'JetBrainsMono Nerd Font'"
+
+      with open(path, "w") as f:
+          json.dump(settings, f, indent=2)
+          f.write("\n")
+      EOF
+  changed_when: true

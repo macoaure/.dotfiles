@@ -14,6 +14,9 @@
     - name: Fonts
       ansible.builtin.import_tasks: tasks/fonts.yml
 
+    - name: VS Code
+      ansible.builtin.import_tasks: tasks/vscode.yml
+
     - name: Shell
       ansible.builtin.import_tasks: tasks/shell.yml
 
