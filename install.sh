@@ -76,10 +76,18 @@ fi
 # ---------------------------------------------------------------------------
 info "Stowing packages..."
 cd "$DOTFILES_DIR"
+
+# oh-my-zsh creates ~/.zshrc from its template; remove it so stow can link ours
+rm -f "$HOME/.zshrc"
+
+# Pre-create ~/.config as a real directory to prevent stow tree-folding
+mkdir -p "$HOME/.config"
+
 for pkg in packages/*/; do
   pkg_name="${pkg%/}"
   pkg_name="${pkg_name#packages/}"
-  stow --dir=packages --target="$HOME" "$pkg_name" && success "stowed $pkg_name"
+  stow --dir=packages --target="$HOME" "$pkg_name"
+  success "stowed $pkg_name"
 done
 
 success "Done! Restart your shell or run: exec zsh"

@@ -2,6 +2,11 @@
 
 load 'helpers'
 
+setup() {
+  export PNPM_HOME="$HOME/.local/share/pnpm"
+  export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PNPM_HOME/bin:$PATH"
+}
+
 @test "mise is available" {
   assert_command mise
 }

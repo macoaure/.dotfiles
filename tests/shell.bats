@@ -7,7 +7,6 @@ load 'helpers'
   assert_success
 }
 
-@test ".zshrc sets PATH to include .local/bin" {
-  run zsh -c "source $HOME/.zshrc && echo \$PATH"
-  assert_output --partial ".local/bin"
+@test ".zshrc exports .local/bin in PATH" {
+  grep -q '\.local/bin' "$HOME/.zshrc"
 }

@@ -2,14 +2,6 @@
 
 load 'helpers'
 
-setup_file() {
-  cd "$DOTFILES_DIR"
-  for pkg in packages/*/; do
-    pkg_name="${pkg%/}"; pkg_name="${pkg_name#packages/}"
-    stow --dir=packages --target="$HOME" "$pkg_name"
-  done
-}
-
 @test ".zshrc is symlinked" {
   assert_symlink "$HOME/.zshrc"
 }
@@ -18,12 +10,12 @@ setup_file() {
   assert_symlink "$HOME/.gitconfig"
 }
 
-@test "mise config is symlinked" {
-  assert_symlink "$HOME/.config/mise/config.toml"
+@test "mise config dir is symlinked" {
+  assert_symlink "$HOME/.config/mise"
 }
 
-@test "htoprc is symlinked" {
-  assert_symlink "$HOME/.config/htop/htoprc"
+@test "htop config dir is symlinked" {
+  assert_symlink "$HOME/.config/htop"
 }
 
 @test "no broken symlinks in HOME" {
