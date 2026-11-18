@@ -1,3 +1,9 @@
 [tools]
 node = "latest"
 php = "8"
+rust = "stable"
+go = "latest"
+pnpm = "latest"
+
+[env]
+GOTOOLCHAIN = "local"

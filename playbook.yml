@@ -11,9 +11,6 @@
     - name: Packages
       ansible.builtin.import_tasks: tasks/packages.yml
 
-    - name: Tools
-      ansible.builtin.import_tasks: tasks/tools.yml
-
     - name: Shell
       ansible.builtin.import_tasks: tasks/shell.yml
 
