@@ -174,7 +174,7 @@ mn, mx = min(temps), max(temps)
 rng    = mx - mn or 1
 spark  = ''.join(blocks[round((t - mn) / rng * 7)] for t in temps)
 
-print(f'{sym} {temp}°C {spark} {mn}–{mx}°C')
+print(f'{sym} {temp}°C')
 " 2>/dev/null) || return
 
   [[ -n "$display" ]] && echo "$display" >| "$_WEATHER_CACHE"
