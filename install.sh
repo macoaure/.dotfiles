@@ -14,11 +14,9 @@ if [[ $EUID -eq 0 ]]; then
   pacman -S --needed --noconfirm base-devel make ansible
   ansible-playbook "$DOTFILES_DIR/playbook.yml"
 else
-  sudo -v
-  sudo pacman -S --needed --noconfirm base-devel make ansible
-  if sudo -n true 2>/dev/null; then
-    ansible-playbook "$DOTFILES_DIR/playbook.yml"
-  else
-    ansible-playbook "$DOTFILES_DIR/playbook.yml" --ask-become-pass
-  fi
+  read -rsp "[sudo] password for $(whoami): " _sudo_pass
+  echo
+  echo "$_sudo_pass" | sudo -S pacman -S --needed --noconfirm base-devel make ansible
+  ANSIBLE_BECOME_PASSWORD="$_sudo_pass" ansible-playbook "$DOTFILES_DIR/playbook.yml"
+  unset _sudo_pass
 fi
