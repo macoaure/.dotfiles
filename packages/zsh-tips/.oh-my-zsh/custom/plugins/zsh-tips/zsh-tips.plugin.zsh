@@ -7,7 +7,7 @@
 (( ${+_ZSH_TIPS_LOADED} )) && return 0
 typeset -g _ZSH_TIPS_LOADED=1
 
-typeset -g  ZSH_TIPS_TIMEOUT=${ZSH_TIPS_TIMEOUT:-20}
+typeset -g  ZSH_TIPS_TIMEOUT=${ZSH_TIPS_TIMEOUT:-5}
 typeset -g  ZSH_TIPS_ENABLED=${ZSH_TIPS_ENABLED:-true}
 
 typeset -ga ZSH_TIPS=(
@@ -62,29 +62,23 @@ typeset -ga ZSH_TIPS=(
   "Ctrl+C then !!  — cancel the current command and immediately retry it"
 )
 
-# Show tip in RPROMPT: no print, no newline, no new prompt line.
-# zle reset-prompt only redraws the current line in place.
-# precmd hook restores the original RPROMPT after the next command runs.
-_zsh_tips_show() {
-  [[ "$ZSH_TIPS_ENABLED" == true ]] || return
-  local idx=$(( RANDOM % ${#ZSH_TIPS[@]} + 1 ))
-  local tip="${ZSH_TIPS[$idx]}"
-  local display="${tip:gs/%/%%}"
-  typeset -g _ZSH_TIPS_RPROMPT_ORIG="${RPROMPT}"
-  RPROMPT="%F{242} 💡 ${display}%f"
-  zle reset-prompt
-}
-
-_zsh_tips_precmd() {
+# Restore RPROMPT before the next command runs.
+_zsh_tips_restore() {
   [[ -v _ZSH_TIPS_RPROMPT_ORIG ]] || return
   RPROMPT="${_ZSH_TIPS_RPROMPT_ORIG}"
   unset _ZSH_TIPS_RPROMPT_ORIG
 }
 autoload -Uz add-zsh-hook
-add-zsh-hook precmd _zsh_tips_precmd
+add-zsh-hook preexec _zsh_tips_restore
 
+# zle reset-prompt must be called directly in TRAPALRM, not in a subfunction.
 TRAPALRM() {
-  _zsh_tips_show
+  [[ "$ZSH_TIPS_ENABLED" == true ]] || return
+  local idx=$(( RANDOM % ${#ZSH_TIPS[@]} + 1 ))
+  local display="${ZSH_TIPS[$idx]:gs/%/%%}"
+  typeset -g _ZSH_TIPS_RPROMPT_ORIG="${RPROMPT}"
+  RPROMPT="%F{242} 💡 ${display}%f"
+  zle reset-prompt
 }
 
 # Only shorten TMOUT if unset or already larger than our threshold
