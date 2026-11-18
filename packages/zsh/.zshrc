@@ -136,6 +136,62 @@ alias commit='git commit -m'
 # ── p10k ──────────────────────────────────────────────────────────────────────
 [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
+# ── Weather (p10k segment) ────────────────────────────────────────────────────
+# City used for all weather lookups. Override in ~/.zshenv before sourcing this.
+WEATHER_CITY="${WEATHER_CITY:-Londrina}"
+_WEATHER_CACHE="$HOME/.cache/weather_p10k"
+
+# Fetch wttr.in JSON, build "⛅ 23°C ▁▂▄▆▇▇▅▃ 18–29°C", write to cache.
+# Always called in background — never blocks the prompt.
+function _weather_refresh_cache() {
+  local json
+  json=$(curl -s --connect-timeout 3 "wttr.in/${WEATHER_CITY}?format=j1" 2>/dev/null) || return
+  [[ -z "$json" ]] && return
+
+  local display
+  display=$(echo "$json" | python3 -c "
+import json, sys
+
+data = json.load(sys.stdin)
+cc   = data['current_condition'][0]
+temp = cc.get('temp_C', '?')
+
+# Map weatherCode to a Unicode symbol
+code = int(cc.get('weatherCode', 0))
+if   code == 113:                               sym = '☀'
+elif code in (116, 119, 122):                   sym = '⛅'
+elif code in (143, 248, 260):                   sym = '🌫'
+elif code in (200, 386, 389, 392, 395):         sym = '⛈'
+elif code in (179, 182, 227, 230, 323, 326,
+              329, 332, 335, 338, 350, 371):    sym = '❄'
+else:                                           sym = '🌧'
+
+# 8-point sparkline from today's hourly forecast (every 3 h: 0–21)
+hourly = data['weather'][0]['hourly']
+temps  = [int(h.get('tempC', 0)) for h in hourly]
+blocks = '▁▂▃▄▅▆▇█'
+mn, mx = min(temps), max(temps)
+rng    = mx - mn or 1
+spark  = ''.join(blocks[round((t - mn) / rng * 7)] for t in temps)
+
+print(f'{sym} {temp}°C {spark} {mn}–{mx}°C')
+" 2>/dev/null) || return
+
+  [[ -n "$display" ]] && echo "$display" >| "$_WEATHER_CACHE"
+}
+
+# p10k custom segment: instant (file read only), triggers background refresh when stale.
+# Add 'my_weather' to POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS in ~/.p10k.zsh to enable.
+function prompt_my_weather() {
+  zmodload zsh/datetime 2>/dev/null
+  if [[ ! -f "$_WEATHER_CACHE" ]] ||
+     (( EPOCHSECONDS - $(stat -c %Y "$_WEATHER_CACHE" 2>/dev/null || echo 0) > 3600 )); then
+    _weather_refresh_cache &!
+  fi
+  [[ -f "$_WEATHER_CACHE" ]] || return
+  p10k segment -f 39 -t "$(< "$_WEATHER_CACHE")"
+}
+
 # ── Functions ─────────────────────────────────────────────────────────────────
 
 # Reload this file without opening a new shell
